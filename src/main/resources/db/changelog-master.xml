@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    <changeSet author="seywerth" id="1575853700681-2">
+        <createTable tableName="metering_data_day">
+            <column name="start_time" type="datetime(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="NULL" name="until_time" type="datetime(6)"/>
+            <column defaultValueComputed="NULL" name="power_consumed" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="power_feedback" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="power_produced" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="status_code" type="BIGINT"/>
+            <column defaultValueComputed="NULL" name="update_time" type="datetime(6)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="seywerth" id="1575853700681-3">
+        <createTable tableName="metering_data_min">
+            <column name="start_time" type="datetime(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="NULL" name="until_time" type="datetime(6)"/>
+            <column defaultValueComputed="NULL" name="power_consumed" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="power_feedback" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="power_produced" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="status_code" type="BIGINT"/>
+            <column defaultValueComputed="NULL" name="update_time" type="datetime(6)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="seywerth" id="1575853700681-4">
+        <createTable tableName="metering_data_sec">
+            <column name="creation_time" type="datetime(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="NULL" name="power_consumed" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="power_feedback" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="power_produced" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="status_code" type="BIGINT"/>
+            <column defaultValueComputed="NULL" name="update_time" type="datetime(6)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="seywerth" id="1575853700681-5">
+        <createTable tableName="setting">
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="NULL" name="description" type="VARCHAR(255)"/>
+            <column defaultValueComputed="NULL" name="update_time" type="datetime(6)"/>
+            <column defaultValue="NULL" name="value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="seywerth" id="1575853700681-6">
+        <addPrimaryKey columnNames="start_time" constraintName="PRIMARY" tableName="metering_data_day"/>
+    </changeSet>
+    <changeSet author="seywerth" id="1575853700681-7">
+        <addPrimaryKey columnNames="start_time" constraintName="PRIMARY" tableName="metering_data_min"/>
+    </changeSet>
+    <changeSet author="seywerth" id="1575853700681-8">
+        <addPrimaryKey columnNames="creation_time" constraintName="PRIMARY" tableName="metering_data_sec"/>
+    </changeSet>
+    <changeSet author="seywerth" id="1575853700681-9">
+        <addPrimaryKey columnNames="name" constraintName="PRIMARY" tableName="setting"/>
+    </changeSet>
+    
+    <changeSet author="seywerth" id="1575853700700">
+    	<insert tableName="setting">
+        	<column name="name" value="VERSION"/>
+        	<column name="value" value="0.0.1"/>
+    	</insert>
+	</changeSet>
+
+    <changeSet author="seywerth" id="1576186224690-1">
+    	<addColumn tableName="metering_data_day">
+            <column defaultValueComputed="NULL" name="archive_consumed" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="archive_feedback" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="archive_produced" type="DECIMAL(19, 2)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="seywerth" id="1576186224690-2">
+    	<addColumn tableName="metering_data_min">
+            <column defaultValueComputed="NULL" name="archive_consumed" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="archive_feedback" type="DECIMAL(19, 2)"/>
+            <column defaultValueComputed="NULL" name="archive_produced" type="DECIMAL(19, 2)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
