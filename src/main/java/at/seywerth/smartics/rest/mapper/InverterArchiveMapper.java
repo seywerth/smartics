@@ -17,8 +17,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import at.seywerth.smartics.rest.model.InverterDto;
+import at.seywerth.smartics.rest.model.InverterStatus;
 import at.seywerth.smartics.rest.model.MeteringDataMin;
+import at.seywerth.smartics.rest.model.MeteringDataMinDto;
 import at.seywerth.smartics.rest.model.PowerProducedDto;
+import at.seywerth.smartics.util.InverterCalculatorUtil;
 import at.seywerth.smartics.util.InverterDateTimeFormater;
 
 /**
@@ -46,7 +49,22 @@ public class InverterArchiveMapper {
 						dto.getPvCurrent(),	dto.getLoadCurrent(), dto.getLoadGrid(), dto.getStatusCode().getCode());
 		return entity;
 	}
-	
+
+	public static MeteringDataMinDto convertToDto(MeteringDataMin entity) {
+		MeteringDataMinDto dto = new MeteringDataMinDto(
+				entity.getStartTime().toInstant(),
+				entity.getUntilTime().toInstant(),
+				entity.getPowerProduced(),
+				entity.getPowerConsumed(),
+				entity.getPowerFeedback(),
+				InverterStatus.getByCode(entity.getStatusCode()));
+		// additional calculations
+		dto.setAutonomy(InverterCalculatorUtil.calcAutonomy(
+				InverterCalculatorUtil.calcPowerFromProduction(entity.getPowerProduced(), entity.getPowerFeedback()),
+				entity.getPowerConsumed()));
+		return dto;
+	}
+
 	public static List<PowerProducedDto> convertToDto(JsonNode rootNode, String day, String channel) {
     	ArrayList<PowerProducedDto> list = new ArrayList<>();
 		// map json

@@ -1,7 +1,5 @@
 package at.seywerth.smartics.rest;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -14,13 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import at.seywerth.smartics.rest.api.InverterRepository;
+import at.seywerth.smartics.rest.mapper.InverterArchiveMapper;
 import at.seywerth.smartics.rest.model.InverterDto;
+import at.seywerth.smartics.rest.model.InverterStatus;
 import at.seywerth.smartics.rest.model.MeteringDataDay;
 import at.seywerth.smartics.rest.model.MeteringDataMin;
 import at.seywerth.smartics.rest.model.MeteringDataSec;
 import at.seywerth.smartics.rest.model.MeteringDataSummaryDto;
 import at.seywerth.smartics.util.InverterCalculatorUtil;
 import at.seywerth.smartics.util.InverterDateTimeFormater;
+
 
 /**
  * service to access inverter data by rest.
@@ -121,50 +122,49 @@ public class InverterService {
 		List<MeteringDataMin> list = meteringDataMinService.findWithinRange(startTime, untilTime);
 		if (list.isEmpty()) {
 			LOG.warn("calculateSummary no entries were found between: {} and {}!", startTime, untilTime);
+			result.setStatus(InverterStatus.NOT_ENOUGH_DATA);
 			return result;
 		}
 
-		LOG.info("calculateSummary from {} until {} found: {} entries for calc..", startTime, untilTime, list.size());
-		result.setMeteringDataMins(list);
+		LOG.trace("calculateSummary from {} until {} found: {} entries for calc..", startTime, untilTime, list.size());
+		Instant startTimeData = untilTime;
+		Instant untilTimeData = startTime;
 		for (MeteringDataMin entry : list) {
+			if (entry.getStartTime().toInstant().isBefore(startTimeData)) {
+				startTimeData = entry.getStartTime().toInstant();
+			}
+			if (entry.getUntilTime().toInstant().isAfter(untilTimeData)) {
+				untilTimeData = entry.getUntilTime().toInstant();
+			}
+			result.addMeteringDataMinDto(InverterArchiveMapper.convertToDto(entry));
+
 			// TODO use data from archive if not realtime available
 			result.setPowerProduced(result.getPowerProduced().add(entry.getPowerProduced()));
 			result.setPowerConsumed(result.getPowerConsumed().add(entry.getPowerConsumed()));
 			result.setPowerFeedback(result.getPowerFeedback().add(entry.getPowerFeedback()));
 		}
-		Double powerFromNetwork = calcPowerFromNetwork(result.getPowerConsumed(), result.getPowerProduced(), result.getPowerFeedback());
-		result.setPowerFromNetwork(getBigDecimal(powerFromNetwork));
-		result.setPowerFromProduction(result.getPowerProduced().subtract(result.getPowerFeedback()));
+		Double powerFromNetwork = InverterCalculatorUtil.calcPowerFromNetwork(result.getPowerConsumed(), result.getPowerProduced(), result.getPowerFeedback());
+		result.setPowerFromNetwork(InverterCalculatorUtil.getBigDecimal(powerFromNetwork));
+		result.setPowerFromProduction(InverterCalculatorUtil.calcPowerFromProduction(result.getPowerProduced(), result.getPowerFeedback()));
 		// TODO get cost and income from settings
 		Double costKwh = 0.09;
 		Double incomeKwh = 0.07;
-		result.setCost(calcCost(powerFromNetwork, costKwh));
-		result.setIncome(calcIncome(result.getPowerFeedback(), incomeKwh));
-		result.setAutonomy(calcAutonomy(result.getPowerFromProduction(), result.getPowerConsumed()));
+		result.setCost(InverterCalculatorUtil.calcCost(powerFromNetwork, costKwh));
+		result.setIncome(InverterCalculatorUtil.calcIncome(result.getPowerFeedback(), incomeKwh));
+		result.setAutonomy(InverterCalculatorUtil.calcAutonomy(result.getPowerFromProduction(), result.getPowerConsumed()));
+		result.setFromTime(startTimeData);
+		result.setUntilTime(untilTimeData);
+
+		if (list.size() < 286) {
+			result.setStatus(InverterStatus.OK_PARTIAL);
+		} else {
+			result.setStatus(InverterStatus.OK);
+		}
 
 		LOG.info("calculateSummary from {} until {} found: {} entries, consumed: {}, feedback: {}, produced: {}.",
-				startTime, untilTime, list.size(), result.getPowerConsumed(), result.getPowerFeedback(), result.getPowerFeedback());
+				startTime, untilTime, list.size(), result.getPowerConsumed(), result.getPowerFeedback(), result.getPowerProduced());
 
 		return result;
 	}
 
-	private static BigDecimal calcAutonomy(BigDecimal powerFromProduction, BigDecimal powerConsumed) {
-		return BigDecimal.valueOf(powerFromProduction.doubleValue() / powerConsumed.doubleValue())
-				.setScale(2, RoundingMode.HALF_UP);
-	}
-	private static BigDecimal getBigDecimal(Double value) {
-		return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
-	}
-
-	private static BigDecimal calcCost(Double powerFromNetwork, Double costKwh) {
-		return getBigDecimal(powerFromNetwork / 1000 * costKwh).setScale(2, RoundingMode.HALF_UP);
-	}
-
-	private static BigDecimal calcIncome(BigDecimal feedback, Double incomeKwh) {
-		return getBigDecimal(feedback.doubleValue() / 1000 * incomeKwh).setScale(2, RoundingMode.HALF_UP);
-	}
-
-	private static Double calcPowerFromNetwork(BigDecimal consumed, BigDecimal produced, BigDecimal feedback) {
-		return consumed.subtract(produced.subtract(feedback)).doubleValue();
-	}
 }

@@ -2,6 +2,7 @@ package at.seywerth.smartics.rest.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,7 +15,8 @@ public class MeteringDataSummaryDto {
 
 	private Instant fromTime;
 	private Instant untilTime;
-	
+	private InverterStatus status;
+
 	private BigDecimal powerProduced;
 	private BigDecimal powerConsumed;
 	private BigDecimal powerFeedback;
@@ -26,8 +28,7 @@ public class MeteringDataSummaryDto {
 	private BigDecimal cost;
 	private BigDecimal income;
 
-	// TODO use meteringDataMinDto without updateTime, but including autonomy,..
-	private List<MeteringDataMin> meteringDataMins;
+	private List<MeteringDataMinDto> meteringDataMinDtos;
 
 	public MeteringDataSummaryDto() {
 		this.powerProduced = BigDecimal.ZERO;
@@ -35,10 +36,15 @@ public class MeteringDataSummaryDto {
 		this.powerFeedback = BigDecimal.ZERO;
 	}
 
-	public MeteringDataSummaryDto(Instant fromTime, Instant untilTime,
-								  BigDecimal powerProduced, BigDecimal powerConsumed, BigDecimal powerFeedback) {
+	public MeteringDataSummaryDto(Instant fromTime,
+								  Instant untilTime,
+								  BigDecimal powerProduced,
+								  BigDecimal powerConsumed,
+								  BigDecimal powerFeedback,
+								  InverterStatus status) {
 		this.fromTime = fromTime;
 		this.untilTime = untilTime;
+		this.status = status;
 		this.powerProduced = powerProduced;
 		this.powerConsumed = powerConsumed;
 		this.powerFeedback = powerFeedback;
@@ -58,6 +64,14 @@ public class MeteringDataSummaryDto {
 
 	public void setUntilTime(Instant untilTime) {
 		this.untilTime = untilTime;
+	}
+
+	public InverterStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(InverterStatus status) {
+		this.status = status;
 	}
 
 	public BigDecimal getPowerProduced() {
@@ -124,12 +138,19 @@ public class MeteringDataSummaryDto {
 		this.income = income;
 	}
 
-	public List<MeteringDataMin> getMeteringDataMins() {
-		return meteringDataMins;
+	public List<MeteringDataMinDto> getMeteringDataMinDtos() {
+		return meteringDataMinDtos;
 	}
 
-	public void setMeteringDataMins(List<MeteringDataMin> meteringDataMins) {
-		this.meteringDataMins = meteringDataMins;
+	public void addMeteringDataMinDto(MeteringDataMinDto meteringDataMinDto) {
+		if (this.meteringDataMinDtos == null) {
+			this.meteringDataMinDtos = new ArrayList<>();
+		}
+		this.meteringDataMinDtos.add(meteringDataMinDto);
+	}
+
+	public void setMeteringDataMinDtos(List<MeteringDataMinDto> meteringDataMinDtos) {
+		this.meteringDataMinDtos = meteringDataMinDtos;
 	}
 
 }

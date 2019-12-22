@@ -2,7 +2,7 @@
 
 ## Description and Specification
 This is a Springboot application to run with MariaDB as Database accessed via JPA, enabled REST access. As package manager Maven is used.
-It runs with Java OpenJDK 11.
+It runs with Java OpenJDK 8 to 11.
 Time to setup: (depending on linux experience level) 5 to 20 mins.
 
 ## Installation
@@ -128,10 +128,10 @@ inspect output of smartics/log:
 
 ## stats
 
-raspberry pi 3 reboot time (from last entry to next entry in mariadb): ~90s
-raspberry pi 3 smartics startup time (including db initialization): ~60s
-entries every 5 seconds: 17.280 a day, 6.307.200 a year, ~450mb
-entries every 5 minutes: 288 a day, 105.120 a year, ~10mb
+- raspberry pi 3 reboot time (from last entry to next entry in mariadb): ~90s
+- raspberry pi 3 smartics startup time (including db initialization): ~60s
+- entries every 5 seconds: 17.280 a day, 6.307.200 a year, ~450mb
+- entries every 5 minutes: 288 a day, 105.120 a year, ~10mb
 
 
 ## Reference Documentation

@@ -27,7 +27,6 @@ public class InverterCalculatorUtil {
      * Hour contains 60*60 seconds.
      */
 	private static final int HOURSECONDS = 3600;
-    
 
     /**
      * calculate sum for entries by seconds
@@ -111,6 +110,67 @@ public class InverterCalculatorUtil {
 		}
 
 		return meteringData;
+	}
+
+	/**
+	 * calculate value for autonomy.
+	 * @param powerFromProduction
+	 * @param powerConsumed
+	 * @return
+	 */
+	public static BigDecimal calcAutonomy(BigDecimal powerFromProduction, BigDecimal powerConsumed) {
+		return BigDecimal.valueOf(powerFromProduction.doubleValue() / powerConsumed.doubleValue())
+				.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * calculate cost for power used.
+	 * @param powerFromNetwork
+	 * @param costKwh
+	 * @return
+	 */
+	public static BigDecimal calcCost(Double powerFromNetwork, Double costKwh) {
+		return getBigDecimal(powerFromNetwork / 1000 * costKwh).setScale(2, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * calculate income for power feed back.
+	 * @param feedback
+	 * @param incomeKwh
+	 * @return
+	 */
+	public static BigDecimal calcIncome(BigDecimal feedback, Double incomeKwh) {
+		return getBigDecimal(feedback.doubleValue() / 1000 * incomeKwh).setScale(2, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * calculate power used from grid.
+	 * @param consumed
+	 * @param produced
+	 * @param feedback
+	 * @return
+	 */
+	public static Double calcPowerFromNetwork(BigDecimal consumed, BigDecimal produced, BigDecimal feedback) {
+		return consumed.subtract(produced.subtract(feedback)).doubleValue();
+	}
+
+	/**
+	 * calculate power used from own production.
+	 * @param powerProduced
+	 * @param powerFeedback
+	 * @return
+	 */
+	public static BigDecimal calcPowerFromProduction(BigDecimal powerProduced, BigDecimal powerFeedback) {
+		return powerProduced.subtract(powerFeedback);
+	}
+
+	/**
+	 * get rounded bigDecimal for double value.
+	 * @param value double
+	 * @return bigDecimal
+	 */
+	public static BigDecimal getBigDecimal(Double value) {
+		return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
 	}
 
 	/**

@@ -72,8 +72,8 @@ public class MeteringDataDayService {
 		if (diffSecs > 1470 || diffSecs < 1410) {
 			LOG.warn("daily: run combined with {} mins not really 24 hours, data might not be valid!", diffSecs);
 			return InverterStatus.NOT_ENOUGH_DATA;
-		} else if (size < 144) {
-			LOG.warn("daily: run combined {} entries - less than 12*12hrs (144), data might be incomplete!", size);
+		} else if (size < 286) {
+			LOG.warn("daily: run combined {} entries - less than 12*24hrs (288-2/variance), data might be incomplete!", size);
 			return InverterStatus.OK_PARTIAL;
 		}
 		return InverterStatus.OK;
