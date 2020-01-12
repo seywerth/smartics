@@ -31,7 +31,7 @@ public class MeteringDataController {
 	public List<MeteringDataSec> getAllInverters() {
 		return meteringDataService.findAll();
 	}
-	
+
 	@PutMapping("/api/inverter")
 	public MeteringDataSec saveInverter(MeteringDataSec meteringDataSec) {
 		return meteringDataService.save(meteringDataSec);

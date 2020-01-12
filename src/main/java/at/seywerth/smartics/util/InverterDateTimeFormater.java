@@ -32,14 +32,18 @@ public class InverterDateTimeFormater {
      */
     private static final DateTimeFormatter timeReadableFormat = DateTimeFormatter.ISO_LOCAL_TIME;
 
-    
+    /**
+     * charger dateTime format (ddmmyyhhmm)
+     */
+    private static final DateFormat dateTimeDMYHM = new SimpleDateFormat("ddmmyyhhmm");
+
     public static String getDDMMYYYYForTimestamp(Timestamp timestamp) {
     	//formatter.
     	return "";
     }
 
     public static Instant getInstantForSDF(String ddMMyyyy) throws ParseException {
-    	return Instant.ofEpochMilli(dateSimpleFormat.parse(ddMMyyyy).getTime());    	
+    	return Instant.ofEpochMilli(dateSimpleFormat.parse(ddMMyyyy).getTime());
     }
 
     public static String getTimeReadableFormatted(final Instant instant) {
@@ -51,5 +55,9 @@ public class InverterDateTimeFormater {
     public static Instant getInstantForISOOffsetDateTime(final String isoDateTime) {
     	return Instant.from(dateTimeISOOffsetFormat.parse(isoDateTime));
     }
+
+	public static Instant getInstantForDMYHMDateTime(String ddmmyyhhmm) throws ParseException {
+		return  Instant.ofEpochMilli(dateTimeDMYHM.parse(ddmmyyhhmm).getTime());  
+	}
 
 }

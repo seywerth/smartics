@@ -1,7 +1,7 @@
 package at.seywerth.smartics.rest.model;
 
 /**
- * enum for settings
+ * enum for status of inverter
  * 
  * @author Raphael Seywerth
  *

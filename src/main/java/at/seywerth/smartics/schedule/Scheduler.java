@@ -185,8 +185,8 @@ public class Scheduler {
 
 
 		meteringDataDayService.save(meteringData);
-		LOG.info("daily saved: {} produced, {} consumed, {} feedback!", meteringData.getPowerProduced(),
-				meteringData.getPowerConsumed(), meteringData.getPowerFeedback());
+		LOG.info("daily (used {} min entries) saved: {} produced, {} consumed, {} feedback!", list.size(),
+				meteringData.getPowerProduced(), meteringData.getPowerConsumed(), meteringData.getPowerFeedback());
 		}
 
 	}
