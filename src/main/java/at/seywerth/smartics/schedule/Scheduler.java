@@ -16,6 +16,7 @@ import at.seywerth.smartics.rest.MeteringDataDayService;
 import at.seywerth.smartics.rest.MeteringDataMinService;
 import at.seywerth.smartics.rest.MeteringDataSecService;
 import at.seywerth.smartics.rest.SettingService;
+import at.seywerth.smartics.rest.api.ChargerRepository;
 import at.seywerth.smartics.rest.api.InverterRepository;
 import at.seywerth.smartics.rest.mapper.InverterRealtimeMapper;
 import at.seywerth.smartics.rest.model.InverterDto;
@@ -52,6 +53,8 @@ public class Scheduler {
 	private MeteringDataMinService meteringDataMinService;
 	@Autowired
 	private MeteringDataDayService meteringDataDayService;
+	@Autowired
+	private ChargerRepository chargerRepository;
 
 
 	/**
@@ -91,9 +94,11 @@ public class Scheduler {
 	 */
 	@Scheduled(cron = "0 */5 * * * *")
 	public void roughScheduler() {
-		Instant currentTime = Instant.now();
-		Setting rough = settingService.findByName(SettingName.SCHEDULE_ROUGH);
+		final Instant currentTime = Instant.now();
+		final Setting rough = settingService.findByName(SettingName.SCHEDULE_ROUGH);
+		MeteringDataMin meteringData = null;
 
+		// write metering data if available
 		if (rough != null && rough.getValue() != null && rough.getValue().equals("true")) {
 			LOG.info("ROUGH scheduler run at {}", InverterDateTimeFormater.getTimeReadableFormatted(currentTime));
 
@@ -132,7 +137,7 @@ public class Scheduler {
 				meteringDataSec.setCreationTime(Timestamp.from(currentTime));
 				list.add(meteringDataSec);
 			}
-			MeteringDataMin meteringData = InverterCalculatorUtil.calculateSumForSecEntries(list);
+			meteringData = InverterCalculatorUtil.calculateSumForSecEntries(list);
 
 			// warning on non 5-min spans
 			meteringData.setStatusCode(MeteringDataMinService.getStatusForMeteringData(meteringData, list.size()).getCode());
@@ -140,6 +145,12 @@ public class Scheduler {
 			meteringDataMinService.save(meteringData);
 			LOG.info("rough saved: {} produced, {} consumed, {} feedback!", meteringData.getPowerProduced(),
 					meteringData.getPowerConsumed(), meteringData.getPowerFeedback());
+		}
+
+		// do smart charging if enabled
+		Setting chargerMode = settingService.findByName(SettingName.CHARGER_MODE);
+		if (chargerMode != null && meteringData != null) {
+			chargerRepository.analyzeChargerStatus(chargerMode, meteringData);
 		}
 	}
 

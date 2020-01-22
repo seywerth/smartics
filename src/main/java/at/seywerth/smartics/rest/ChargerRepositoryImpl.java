@@ -17,7 +17,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import at.seywerth.smartics.rest.api.ChargerRepository;
 import at.seywerth.smartics.rest.mapper.ChargerStatusMapper;
+import at.seywerth.smartics.rest.model.ChargerMode;
+import at.seywerth.smartics.rest.model.ChargerStatus;
 import at.seywerth.smartics.rest.model.ChargerStatusDto;
+import at.seywerth.smartics.rest.model.MeteringDataMin;
+import at.seywerth.smartics.rest.model.Setting;
+import at.seywerth.smartics.rest.model.SettingName;
+import at.seywerth.smartics.util.InverterCalculatorUtil;
 
 /**
  * repository interface for charger data.
@@ -35,8 +41,15 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 	private static final String CHARGER_SET = "/mqtt?";
 	private static final String CHARGER_QUERY = "payload=";
 
+	public static final int AMPERE_MIN = 6;
+	public static final int COLOR_YELLOW = 16776960;
+	public static final int COLOR_MAGENTA = 16711935;
+	public static final int COLOR_BLUE = 65535;
+
 	@Autowired
 	private ObjectMapper mapper;
+	@Autowired
+	private SettingService settingService;
 
 
 	@Override
@@ -97,9 +110,10 @@ public class ChargerRepositoryImpl implements ChargerRepository {
     		if (result.getAmpere().compareTo(Integer.valueOf(ampere)) == 0) {
     			return true;
     		}
+			LOG.error("setAmpere change to {} A on charger failed!", ampere);
     	} catch (IOException e) {
     		// TODO handle connection timeout
-    		LOG.error("setStatusData Exception on parsing json data {}", e.getMessage());
+    		LOG.error("setAmpere Exception on parsing json data {}", e.getMessage());
     	}
 		return false;
 	}
@@ -118,15 +132,16 @@ public class ChargerRepositoryImpl implements ChargerRepository {
     		if (result.getColorCharging().compareTo(Integer.valueOf(color)) == 0) {
     			return true;
     		}
+    		LOG.error("setColorCharging change to color {} on charger failed!", color);
     	} catch (IOException e) {
     		// TODO handle connection timeout
-    		LOG.error("setStatusData Exception on parsing json data {}", e.getMessage());
+    		LOG.error("setColorCharging Exception on parsing json data {}", e.getMessage());
     	}
 		return false;
 	}
 
 	@Override
-	public boolean setAllowCharging(Boolean allowCharging) {
+	public boolean setAllowCharging(final Boolean allowCharging) {
 		JsonNode rootNode;
     	try {
     		final String query = CHARGER_IP + CHARGER_SET + CHARGER_QUERY + "alw=" + (allowCharging.booleanValue() ? "1" : "0");
@@ -139,9 +154,10 @@ public class ChargerRepositoryImpl implements ChargerRepository {
     		if (result.getAllowCharging().compareTo(allowCharging) == 0) {
     			return true;
     		}
+    		LOG.error("setAllowCharging setting activation on charger to {} failed!", allowCharging);
     	} catch (IOException e) {
     		// TODO handle connection timeout
-    		LOG.error("setStatusData Exception on parsing json data {}", e.getMessage());
+    		LOG.error("setAllowCharging Exception on parsing json data {}", e.getMessage());
     	}
 		return false;
 	}
@@ -168,4 +184,106 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 		return result.concat(param);
 	}
 
+	@Override
+	public void analyzeChargerStatus(Setting settingChargerMode, final MeteringDataMin meteringData) {
+		ChargerMode chargerMode = ChargerMode.getByCode(settingChargerMode.getValue());
+		// check availability
+		final ChargerStatusDto chargerStatus = getStatusData();
+		if (ChargerMode.UNAVAILABLE == chargerMode) {
+			LOG.info("analyzeChargerStatus: last charger state was not available, rechecking..");
+			if (chargerStatus == null) {
+				LOG.info("analyzeChargerStatus: charger still unavailable!");
+				return;
+			} else {
+				chargerMode = ChargerMode.DEACTIVATED;
+			}
+		}
+		Setting settingChargerAmp = settingService.findByName(SettingName.CHARGER_AMPERE_CURRENT);
+
+		// read on true..
+		if (ChargerMode.SMART == chargerMode) {
+			// calculate ampere and color for charging
+			final Integer currentAmpere = calculateSmartCharging(chargerStatus, meteringData);
+			if (currentAmpere != null) {
+				settingChargerAmp.setValue(String.valueOf(currentAmpere));
+				settingService.save(settingChargerAmp);
+			}
+		} else {
+			// update charger state from charger
+			if (chargerStatus == null) {
+				settingChargerMode.setValue(ChargerMode.UNAVAILABLE.name());
+			} else if (!chargerStatus.getAllowCharging().booleanValue()) {
+				settingChargerMode.setValue(ChargerMode.DEACTIVATED.name());
+			} else if (chargerStatus.getAllowCharging().booleanValue()) {
+				settingChargerMode.setValue(ChargerMode.FIXED.name());
+				settingChargerAmp.setValue(chargerStatus.getAmpere().toString());
+				settingService.save(settingChargerAmp);
+			}
+			LOG.info("analyzeChargerStatus: no smart charging, charger status is {}", settingChargerMode.getValue());
+			settingService.save(settingChargerMode);
+		}
+	}
+
+	/**
+	 * calculate and set smart charging data.
+	 * 
+	 * @param chargerStatus
+	 * @param meteringData
+	 * @return current ampere number
+	 */
+	protected Integer calculateSmartCharging(final ChargerStatusDto chargerStatus, final MeteringDataMin meteringData) {
+		double excessEnergyWh = meteringData.getPowerFeedback().doubleValue() * 12;
+		double extendEnergyWh = InverterCalculatorUtil.calcPowerFromNetwork(meteringData.getPowerConsumed(),
+				meteringData.getPowerProduced(), meteringData.getPowerFeedback()) * 12;
+		if (excessEnergyWh <= 0 && ChargerStatus.LOADING != chargerStatus.getConnectionStatus()) {
+			LOG.info("analyzeChargerStatus: no excess energy available for smart charging!");
+			return null;
+		}
+		// devide by Volt
+		Setting settingChargerVolt = settingService.findByName(SettingName.CHARGER_VOLTAGE);
+		if (settingChargerVolt == null || settingChargerVolt.getValue().isEmpty()) {
+			LOG.error("analyzeChargerStatus: voltage has not been specified for charger, no smart charging!");
+			return null;
+		}
+		double excessAmpere = excessEnergyWh / Integer.parseInt(settingChargerVolt.getValue());
+		double extendAmpere = extendEnergyWh / Integer.parseInt(settingChargerVolt.getValue());
+		LOG.info("analyzeChargerStatus: smart excess energy {} Wh, {} A", excessEnergyWh, excessAmpere);
+		LOG.info("analyzeChargerStatus: smart extend energy {} Wh, {} A", extendEnergyWh, extendAmpere);
+		// set color, activation.. if at least 2A excess
+		if (excessAmpere > 2) {
+			// todo decide on rounding..
+			int ampereToSet = (int) excessAmpere;
+			if (chargerStatus.getMaxAmpere() <= excessAmpere) {
+				ampereToSet = chargerStatus.getMaxAmpere();
+			}
+			if (ChargerRepositoryImpl.AMPERE_MIN > ampereToSet) {
+				ampereToSet = ChargerRepositoryImpl.AMPERE_MIN;
+			}
+			LOG.info("analyzeChargerStatus: smart usage of {} A", ampereToSet);
+			// set color
+			int colorCharging = ampereToSet <= excessAmpere ? ChargerRepositoryImpl.COLOR_YELLOW : ChargerRepositoryImpl.COLOR_MAGENTA;
+			setAmpere(String.valueOf(ampereToSet));
+			setColorCharging(String.valueOf(colorCharging));
+			setAllowCharging(true);
+			return ampereToSet;
+		} else if (extendAmpere > 0) {
+			// stop charging if less available
+			// reduce charging
+			if (chargerStatus.getAmpere() > 0 && ChargerStatus.LOADING == chargerStatus.getConnectionStatus()) {
+				int ampereToSet = chargerStatus.getAmpere();
+				if (extendAmpere >= ampereToSet || ampereToSet - extendAmpere <= ChargerRepositoryImpl.AMPERE_MIN) {
+					// deactivate
+					LOG.info("analyzeChargerStatus: smart usage deactivate");
+					ampereToSet = 0;
+					setAllowCharging(false);
+				} else {
+					ampereToSet = (int) (ampereToSet - extendAmpere);
+					LOG.info("analyzeChargerStatus: smart usage reduced to {} A", ampereToSet);
+					setAmpere(String.valueOf(ampereToSet));
+				}
+				return ampereToSet;
+			}
+		}
+		return null;
+	}
 }

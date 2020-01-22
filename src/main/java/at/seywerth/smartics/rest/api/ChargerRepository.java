@@ -3,6 +3,8 @@ package at.seywerth.smartics.rest.api;
 import org.springframework.stereotype.Repository;
 
 import at.seywerth.smartics.rest.model.ChargerStatusDto;
+import at.seywerth.smartics.rest.model.MeteringDataMin;
+import at.seywerth.smartics.rest.model.Setting;
 
 /**
  * repository interface for charger data.
@@ -53,4 +55,13 @@ public interface ChargerRepository {
 	 * @return true if successful, false otherwise
 	 */
 	public boolean setAllowCharging(final Boolean allowCharging);
+
+	/**
+	 * analyzes and sets charger status data according to settings.
+	 * 
+	 * @param chargerMode mode to use: smart, fixed, deactivated
+	 * @param meteringData summary data of last mins
+	 */
+	public void analyzeChargerStatus(Setting chargerMode, MeteringDataMin meteringData);
+
 }

@@ -51,12 +51,13 @@ public class ChargerController {
 	 * @return true if it was set correctly, false otherwise
 	 */
 	@PutMapping("api/charger/{name}")
-	public boolean setParameter(@PathVariable String name, @RequestBody String value) {
-		if (name.contentEquals("ampere")) {
+	public boolean setParameter(@PathVariable String name,
+								@RequestBody String value) {
+		if (name.equals("ampere")) {
 			return chargerService.setAmpere(value);
-		} else if (name.contentEquals("colorCharging")) {
+		} else if (name.equals("colorCharging")) {
 			return chargerService.setColorCharging(value);
-		} else if (name.contentEquals("allowCharging")) {
+		} else if (name.equals("allowCharging")) {
 			return chargerService.setAllowCharging(value);
 		}
 		return false;
