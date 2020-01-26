@@ -85,6 +85,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+    				<addResources>true</addResources>
+				</configuration>
 			</plugin>
 
 			<plugin>
@@ -113,6 +116,7 @@
 				<artifactId>frontend-maven-plugin</artifactId>
 				<version>1.8.0</version>
 				<configuration>
+					<workingDirectory>src/main/frontend</workingDirectory>
 					<installDirectory>target</installDirectory>
 				</configuration>
 				<executions>

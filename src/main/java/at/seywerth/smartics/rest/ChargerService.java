@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import at.seywerth.smartics.rest.api.ChargerRepository;
+import at.seywerth.smartics.rest.model.ChargerMode;
 import at.seywerth.smartics.rest.model.ChargerStatusDto;
+import at.seywerth.smartics.rest.model.Setting;
+import at.seywerth.smartics.rest.model.SettingName;
 
 
 /**
@@ -22,6 +25,8 @@ public class ChargerService {
 
 	@Autowired
 	private ChargerRepository chargerRepository;
+	@Autowired
+	private SettingService settingService;
 
 	public ChargerStatusDto getStatusData() {
 		ChargerStatusDto status = chargerRepository.getStatusData();
@@ -42,7 +47,13 @@ public class ChargerService {
 		if (ampere == null || ampere.isEmpty()) {
 			return false;
 		}
-		return chargerRepository.setAmpere(ampere);
+		boolean isSuccess = chargerRepository.setAmpere(ampere);
+		if (isSuccess) {
+			Setting modeSetting = settingService.findByName(SettingName.CHARGER_AMPERE_CURRENT);
+			modeSetting.setValue(ampere);
+			settingService.save(modeSetting);
+		}
+		return isSuccess;
 	}
 
 	public boolean setColorCharging(final String color) {
@@ -57,5 +68,23 @@ public class ChargerService {
 			return false;
 		}
 		return chargerRepository.setAllowCharging(Boolean.valueOf(allowCharging));
+	}
+
+	public boolean setMode(final String mode) {
+		if (mode == null || mode.isEmpty()) {
+			return false;
+		}
+		ChargerMode chargerMode = ChargerMode.getByCode(mode);
+		Setting modeSetting = settingService.findByName(SettingName.CHARGER_MODE);
+		boolean isSuccess = true;
+		if (ChargerMode.FIXED == chargerMode) {
+			isSuccess = chargerRepository.setAllowCharging(true);
+		} else if (ChargerMode.DEACTIVATED == chargerMode) {
+			isSuccess = chargerRepository.setAllowCharging(false);
+		}
+		modeSetting.setValue(mode);
+		settingService.save(modeSetting);
+
+		return isSuccess;
 	}
 }

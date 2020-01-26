@@ -59,6 +59,8 @@ public class ChargerController {
 			return chargerService.setColorCharging(value);
 		} else if (name.equals("allowCharging")) {
 			return chargerService.setAllowCharging(value);
+		} else if (name.equals("mode")) {
+			return chargerService.setMode(value);
 		}
 		return false;
 	}
