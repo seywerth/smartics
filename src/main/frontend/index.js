@@ -20,8 +20,7 @@ class Index extends Component {
 						</tr>
 						<tr>
 							<td><img src='images/inverter.png' /></td>
-							<td><InverterApp /></td>
-							<td></td>
+							<td colSpan='2'><InverterApp /></td>
 						</tr>
 					</tbody>
 					</table>

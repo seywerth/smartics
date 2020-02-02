@@ -47,12 +47,19 @@ public class SettingService {
 				Setting newSetting = new Setting(setting.name(), setting.getDefaultValue(), setting.getDescription());
 				settingsRepository.save(newSetting);
 				update += 1;
+			} else if (SettingName.VERSION.name() == setting.name()
+					&& !settingToCheck.getValue().equals(setting.getDefaultValue())) {
+				LOG.info("setting setup: setting '{}' updated from '{}' to '{}'!",
+						setting.name(), settingToCheck.getValue(), setting.getDefaultValue());
+				settingToCheck.setValue(setting.getDefaultValue());
+				settingsRepository.save(settingToCheck);
+				update += 1;
 			}
 		}
 		if (update == 0) {
 			LOG.info("setting setup: everyting up to date!");
 		} else {
-			LOG.info("setting setup: {} settings were updated!", update);
+			LOG.info("setting setup: {} setting(s) were updated!", update);
 		}
 		if (settingVersion != null) {
 			LOG.info("setting setup: running app VERSION: {}", settingVersion.getValue());

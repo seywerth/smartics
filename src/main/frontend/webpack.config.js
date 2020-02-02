@@ -18,7 +18,7 @@ module.exports = {
             	test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
                 use: [{
-                    loader: 'babel-loader',
+                    loader: 'babel-loader'
                 }]
             },
             {
@@ -39,7 +39,7 @@ module.exports = {
     devServer: {
     	proxy: [{
     	    context: ['/api', '/images', '/'],
-    	    target: 'http://127.0.0.1:8080',
+    	    target: 'http://127.0.0.1:8080'
     	}]
 	}
 };

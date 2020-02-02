@@ -16,7 +16,7 @@ class ChargerApp extends Component {
         .catch(console.log)
     }
 
-    render() {
+	render() {
         return (
 				<div>
 	            	<h2>charger</h2>

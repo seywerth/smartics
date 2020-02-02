@@ -67,7 +67,7 @@ public class Scheduler {
 		Setting detail = settingService.findByName(SettingName.SCHEDULE_DETAIL);
 
 		if (detail != null && detail.getValue() != null && detail.getValue().equals("true")) {
-			LOG.info("DETAIL scheduler run at {}", InverterDateTimeFormater.getTimeReadableFormatted(currentTime));
+			LOG.debug("DETAIL scheduler run at {}", InverterDateTimeFormater.getTimeReadableFormatted(currentTime));
 
 			// PROBLEM: creationTime of inverter is later - check which time to use!
 			// check if data was not already written (has to be older than 4.5 secs)
@@ -83,7 +83,7 @@ public class Scheduler {
 			// override with local time, server time might be a little different!
 			meteringData.setCreationTime(Timestamp.from(currentTime));
 			meteringDataSecService.save(meteringData);
-			LOG.info("detail saved: {} produced, {} consumed, {} feedback!", meteringData.getPowerProduced(),
+			LOG.debug("detail saved: {} produced, {} consumed, {} feedback!", meteringData.getPowerProduced(),
 					meteringData.getPowerConsumed(), meteringData.getPowerFeedback());
 		}
 	}
