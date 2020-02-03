@@ -14,12 +14,12 @@ class Index extends Component {
 					<thead></thead>
 					<tbody>
 						<tr>
-							<td><img src='images/charger.png' /></td>
+							<td><img src='images/charger.png' width='60px'/></td>
 							<td><ChargerApp /></td>
 							<td><ChargerSetting /></td>
 						</tr>
 						<tr>
-							<td><img src='images/inverter.png' /></td>
+							<td><img src='images/inverter.png' width='110px' /></td>
 							<td colSpan='2'><InverterApp /></td>
 						</tr>
 					</tbody>

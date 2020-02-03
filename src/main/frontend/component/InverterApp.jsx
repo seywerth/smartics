@@ -44,16 +44,13 @@ class InverterApp extends Component {
 	render() {
 		return (
 				<div>
-	            	<h2>inverter</h2>
+	            	<h2>inverter {this.getCurrentDate(this.state.selectDate)}</h2>
 				  	<div>status: {this.state.inverter.status}</div>
 					<br />
 				  	<div>
-						<button key="prev" onClick={this.handleNavPrev}>previous</button>
-						from: {this.prettyDate(this.state.inverter.fromTime)}
-					</div>
-				  	<div>
+						<button key="prev" onClick={this.handleNavPrev}>previous</button> &nbsp;
+						{this.prettyDate(this.state.inverter.fromTime)} - {this.prettyDate(this.state.inverter.untilTime)} &nbsp;
 						<button key="next" onClick={this.handleNavNext}>next</button>
-						until: {this.prettyDate(this.state.inverter.untilTime)}
 					</div>
 					<br />
 				  	<div>produced: {this.state.inverter.powerProduced}</div>
@@ -74,7 +71,7 @@ class InverterApp extends Component {
 			return;
 		}
 		const day = selectDate.getDate();
-		const newDate = new Date(selectDate);
+		let newDate = new Date(selectDate);
 		newDate.setDate(day - 1);
 		return newDate;
 	}
@@ -84,7 +81,7 @@ class InverterApp extends Component {
 			return;
 		}
 		const day = selectDate.getDate();
-		const newDate = new Date(selectDate);
+		let newDate = new Date(selectDate);
 		newDate.setDate(day + 1);
 		return newDate;
 	}
@@ -93,7 +90,7 @@ class InverterApp extends Component {
 		if (dto == undefined) {
 			return [];
 		}
-		return dto.map(item => [this.prettyTime(item.startTime), item.powerConsumed, item.powerProduced]);
+		return dto.map(item => [this.prettyTime(item.startTime), item.powerConsumed * 12, item.powerProduced * 12]);
 	}
 
 	prettyTime(jsonDate) {
@@ -104,9 +101,17 @@ class InverterApp extends Component {
 
 	prettyDate(jsonDate) {
 		let date = new Date();
+		if (jsonDate == undefined) {
+			return date.toLocaleString();
+		}
 		date.setTime(Date.parse(jsonDate));
-		//return date.toLocaleTimeString('at-DE');
-		return date.toLocaleString();
+		return new Intl.DateTimeFormat("at-DE", {
+          year: "numeric",
+          month: "numeric",
+          day: "2-digit",
+		  hour: "2-digit",
+		  minute: "2-digit"
+        }).format(date);
 	}
 
 	getCurrentDate(initDate) {

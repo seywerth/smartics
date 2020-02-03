@@ -57,7 +57,7 @@ smartics.service:
  [Service]
  Type=idle
  WorkingDirectory=/opt/smartics
- ExecStart=/usr/bin/java -jar smartics-0.1.1.jar > smartics.log 2>&1
+ ExecStart=/usr/bin/java -jar smartics-0.1.2.jar > smartics.log 2>&1
  StandardOutput=syslog
  StandardError=syslog
  SyslogIdentifier=smartics
@@ -100,11 +100,11 @@ connect to mariadb remotely (skip-binding in my.cnf; grant user-access):
 > sudo service mariadb restart
 
 install pscp.exe for accessing and copying files: (use location of jar and tmp folder on pi)
-> ./pscp.exe d:/development/workspace2019/smartics/target/smartics-0.1.1-SNAPSHOT.jar pi@192.168.1.162:/tmp/smartics-0.1.1.jar
+> ./pscp.exe d:/development/workspace2019/smartics/target/smartics-0.1.2-SNAPSHOT.jar pi@192.168.1.162:/tmp/smartics-0.1.2.jar
 
 copy file from temp folder:
 > sudo mkdir /opt/smartics
-> sudo mv /tmp/smartics-0.1.1.jar /opt/smartics/
+> sudo mv /tmp/smartics-0.1.2.jar /opt/smartics/
 
 restart service after update:
 > sudo systemctl restart smartics.service

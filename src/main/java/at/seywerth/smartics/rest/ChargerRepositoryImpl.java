@@ -250,7 +250,7 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 		LOG.info("analyzeChargerStatus: smart excess energy {} Wh, {} A", excessEnergyWh, excessAmpere);
 		LOG.info("analyzeChargerStatus: smart extend energy {} Wh, {} A", extendEnergyWh, extendAmpere);
 		// set color, activation.. if at least 2A excess
-		if (excessAmpere > 2 || ChargerStatus.LOADING == chargerStatus.getConnectionStatus()) {
+		if (excessAmpere > 0) {
 			// todo decide on rounding..
 			int ampereToSet = (int) excessAmpere;
 			// add current if already loading
@@ -259,6 +259,10 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 			}
 			if (chargerStatus.getMaxAmpere() <= ampereToSet) {
 				ampereToSet = chargerStatus.getMaxAmpere();
+			}
+			if (ampereToSet <= 4) {
+				// skip on too little excess energy until season evaluation
+				return null;
 			}
 			if (ChargerRepositoryImpl.AMPERE_MIN > ampereToSet) {
 				ampereToSet = ChargerRepositoryImpl.AMPERE_MIN;
