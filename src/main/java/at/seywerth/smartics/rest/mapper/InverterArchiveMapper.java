@@ -50,18 +50,37 @@ public class InverterArchiveMapper {
 		return entity;
 	}
 
+	/**
+	 * converts a {@link MeteringDataMin} into {@link MeteringDataMinDto}.
+	 * uses alternative archive data if values are null.
+	 */
 	public static MeteringDataMinDto convertToDto(MeteringDataMin entity) {
+		BigDecimal powerConsumed = entity.getPowerConsumed();
+		BigDecimal powerProduced = entity.getPowerProduced();
+		BigDecimal powerFeedback = entity.getPowerFeedback();
+
+		// override data with archive or zero to prevent calc error
+		if (powerProduced == null || powerProduced.compareTo(BigDecimal.ZERO) == 0) {
+			powerProduced = entity.getArchiveProduced() != null ? entity.getArchiveProduced() : BigDecimal.ZERO;
+		}
+		if (powerConsumed == null || powerConsumed.compareTo(BigDecimal.ZERO) == 0) {
+			powerConsumed =  entity.getArchiveConsumed() != null ? entity.getArchiveConsumed() : BigDecimal.ZERO;
+		}
+		if (powerFeedback == null || powerFeedback.compareTo(BigDecimal.ZERO) == 0) {
+			powerFeedback = entity.getArchiveFeedback() != null ? entity.getArchiveFeedback() : BigDecimal.ZERO;
+		}
+
 		MeteringDataMinDto dto = new MeteringDataMinDto(
 				entity.getStartTime().toInstant(),
 				entity.getUntilTime().toInstant(),
-				entity.getPowerProduced(),
-				entity.getPowerConsumed(),
-				entity.getPowerFeedback(),
+				powerProduced,
+				powerConsumed,
+				powerFeedback,
 				InverterStatus.getByCode(entity.getStatusCode()));
 		// additional calculations
 		dto.setAutonomy(InverterCalculatorUtil.calcAutonomy(
-				InverterCalculatorUtil.calcPowerFromProduction(entity.getPowerProduced(), entity.getPowerFeedback()),
-				entity.getPowerConsumed()));
+				InverterCalculatorUtil.calcPowerFromProduction(powerProduced, powerFeedback), powerConsumed));
+
 		return dto;
 	}
 

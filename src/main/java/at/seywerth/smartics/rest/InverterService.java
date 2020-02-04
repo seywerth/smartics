@@ -17,6 +17,7 @@ import at.seywerth.smartics.rest.model.InverterDto;
 import at.seywerth.smartics.rest.model.InverterStatus;
 import at.seywerth.smartics.rest.model.MeteringDataDay;
 import at.seywerth.smartics.rest.model.MeteringDataMin;
+import at.seywerth.smartics.rest.model.MeteringDataMinDto;
 import at.seywerth.smartics.rest.model.MeteringDataSec;
 import at.seywerth.smartics.rest.model.MeteringDataSummaryDto;
 import at.seywerth.smartics.util.InverterCalculatorUtil;
@@ -136,12 +137,13 @@ public class InverterService {
 			if (entry.getUntilTime().toInstant().isAfter(untilTimeData)) {
 				untilTimeData = entry.getUntilTime().toInstant();
 			}
-			result.addMeteringDataMinDto(InverterArchiveMapper.convertToDto(entry));
+			// uses data from archive if not realtime available
+			MeteringDataMinDto convertedData = InverterArchiveMapper.convertToDto(entry);
+			result.addMeteringDataMinDto(convertedData);
 
-			// TODO use data from archive if not realtime available
-			result.setPowerProduced(result.getPowerProduced().add(entry.getPowerProduced()));
-			result.setPowerConsumed(result.getPowerConsumed().add(entry.getPowerConsumed()));
-			result.setPowerFeedback(result.getPowerFeedback().add(entry.getPowerFeedback()));
+			result.setPowerProduced(result.getPowerProduced().add(convertedData.getPowerProduced()));
+			result.setPowerConsumed(result.getPowerConsumed().add(convertedData.getPowerConsumed()));
+			result.setPowerFeedback(result.getPowerFeedback().add(convertedData.getPowerFeedback()));
 		}
 		Double powerFromNetwork = InverterCalculatorUtil.calcPowerFromNetwork(result.getPowerConsumed(), result.getPowerProduced(), result.getPowerFeedback());
 		result.setPowerFromNetwork(InverterCalculatorUtil.getBigDecimal(powerFromNetwork));

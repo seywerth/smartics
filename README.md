@@ -41,7 +41,7 @@ the same can be added by replacing 'localhost' with the ip of the remote system 
 
 > sudo nano /etc/rsyslog.d/smartics.conf
 
-if $programname == 'smartics' then /var/log/smartics.log
+if $programname == 'smartics' then /var/log/smartics-0.1.2.log
 if $programname == 'smartics' then stop
 
 > sudo systemctl restart rsyslog
@@ -57,7 +57,7 @@ smartics.service:
  [Service]
  Type=idle
  WorkingDirectory=/opt/smartics
- ExecStart=/usr/bin/java -jar smartics-0.1.2.jar > smartics.log 2>&1
+ ExecStart=/usr/bin/java -jar smartics-0.1.2.jar > smartics-0.1.2.log 2>&1
  StandardOutput=syslog
  StandardError=syslog
  SyslogIdentifier=smartics
@@ -110,7 +110,7 @@ restart service after update:
 > sudo systemctl restart smartics.service
 
 inspect output of smartics/log:
-> tail /var/log/smartics.log -f
+> tail /var/log/smartics-0.1.2.log -f
 
 
 ## todos

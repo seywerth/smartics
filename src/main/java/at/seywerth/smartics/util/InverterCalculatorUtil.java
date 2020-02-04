@@ -113,12 +113,16 @@ public class InverterCalculatorUtil {
 	}
 
 	/**
-	 * calculate value for autonomy.
+	 * calculate value for autonomy. values have to be not null.
 	 * @param powerFromProduction
 	 * @param powerConsumed
 	 * @return
 	 */
 	public static BigDecimal calcAutonomy(BigDecimal powerFromProduction, BigDecimal powerConsumed) {
+		// prevent NumberFormatException on zero
+		if (powerFromProduction.compareTo(BigDecimal.ZERO) == 0 || powerConsumed.compareTo(BigDecimal.ZERO) == 0) {
+			return BigDecimal.ZERO;
+		}
 		return BigDecimal.valueOf(powerFromProduction.doubleValue() / powerConsumed.doubleValue())
 				.setScale(2, RoundingMode.HALF_UP);
 	}
