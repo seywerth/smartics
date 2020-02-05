@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { scaleLinear, scaleBand } from 'd3-scale';
 import { select } from 'd3-selection';
 import { axisBottom, axisLeft } from 'd3-axis';
-import { timeMinute } from 'd3-time';
-import { max } from 'd3-array';
+import { line } from 'd3-shape';
 
 class EnergyChart extends Component {
 
@@ -36,6 +35,20 @@ class EnergyChart extends Component {
          .domain([0, maxY])
          .range([height, 0]);
 
+	  // cleanup elements inside svg
+   	  select(node)
+      	.selectAll('g')
+      	.remove();
+   	  select(node)
+      	.selectAll('rect')
+      	.remove();
+   	  select(node)
+      	.selectAll('circle')
+      	.remove();
+   	  select(node)
+      	.selectAll('path')
+      	.remove();
+
    	  select(node)
       	.selectAll('rect')
       	.data(this.props.data)
@@ -43,11 +56,18 @@ class EnergyChart extends Component {
       	.append('rect');
 
    	  select(node)
-      	.selectAll('rect')
+      	.selectAll('circle')
       	.data(this.props.data)
-      		.exit()
-      	.remove();
+      	.enter()
+      	.append('circle');
 
+	  select(node)
+      	.selectAll('path')
+      	.data(this.props.data)
+      	.enter()
+      	.append('path');
+
+	  // show production
 	  select(node)
       	.selectAll('rect')
       	.data(this.props.data)
@@ -57,6 +77,29 @@ class EnergyChart extends Component {
       	.attr('height', d => height - yScale(d[2]))
       	.attr('width', 2);
 
+	  // show consumption
+	  select(node)
+      	.selectAll('circle')
+      	.data(this.props.data)
+      	.style('fill', '#bb4444')
+      	.attr('cx', d => xScale(d[0]))
+      	.attr('cy', d => yScale(d[1]) + margin.top)
+      	.attr('r', 2)
+		.style("opacity", .7);
+
+	  const lineFunction = line()
+        	.x(d => xScale(d.time))
+  			.y(d => yScale(d.consumed) + margin.top);
+
+	  select(node)
+		.select('path')
+      	.attr('fill', "none")
+      	.attr('stroke', '#bb4444')
+      	.attr('stroke-width', 1.5)
+		.attr('d', lineFunction(this.getArrayObjectForEnergy(this.props.data)))
+		.style('opacity', .5);
+
+	  // prepare axis
 	  let yAxis = axisLeft()
 		.scale(yScale)
 		.ticks(10, "s")
@@ -69,8 +112,8 @@ class EnergyChart extends Component {
 	  let xAxis = axisBottom(scaleTitle)
 		.tickSizeOuter(0);
 
+	  // show axis
 	  select(node)
-		.append('svg')
 		.append('g')
 		.attr('transform', `translate(0,${margin.top + height})`)
 		.call(xAxis)
@@ -79,7 +122,6 @@ class EnergyChart extends Component {
     	.style("text-anchor", "end");
 
 	  select(node)
-		.append('svg')
 		.append('g')
 		.attr('transform', `translate(${margin.left},${margin.top})`)
 		.call(yAxis)
@@ -102,13 +144,19 @@ class EnergyChart extends Component {
 		)
     }
 
+	getArrayObjectForEnergy(data) {
+		let ret = data.map(el => { return { time: el[0], consumed: el[1] }; });
+		//console.log(ret);
+		return ret;
+	}
+
 	getCurrentPos(width) {
 		if (width == undefined) {
 			return 0;
 		}
 		const oneMin = width / (60 * 24);
 		const date = new Date();
-		console.log("currentpos: " + (date.getHours() * 60 + date.getMinutes()) * oneMin);
+		//console.log("currentpos: " + (date.getHours() * 60 + date.getMinutes()) * oneMin);
 		return (date.getHours() * 60 + date.getMinutes()) * oneMin;
 	}
 

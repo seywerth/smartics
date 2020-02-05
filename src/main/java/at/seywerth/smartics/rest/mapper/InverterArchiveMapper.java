@@ -63,11 +63,16 @@ public class InverterArchiveMapper {
 		if (powerProduced == null || powerProduced.compareTo(BigDecimal.ZERO) == 0) {
 			powerProduced = entity.getArchiveProduced() != null ? entity.getArchiveProduced() : BigDecimal.ZERO;
 		}
-		if (powerConsumed == null || powerConsumed.compareTo(BigDecimal.ZERO) == 0) {
-			powerConsumed =  entity.getArchiveConsumed() != null ? entity.getArchiveConsumed() : BigDecimal.ZERO;
-		}
 		if (powerFeedback == null || powerFeedback.compareTo(BigDecimal.ZERO) == 0) {
 			powerFeedback = entity.getArchiveFeedback() != null ? entity.getArchiveFeedback() : BigDecimal.ZERO;
+		}
+		if (powerConsumed == null || powerConsumed.compareTo(BigDecimal.ZERO) == 0) {
+			if (entity.getArchiveConsumed() != null) {
+				// value differs for absolute archive data: consumption = consumed + produced - feedback
+				powerConsumed = entity.getArchiveConsumed().add(powerProduced).subtract(powerFeedback);
+			} else {
+				powerConsumed =  BigDecimal.ZERO;
+			}
 		}
 
 		MeteringDataMinDto dto = new MeteringDataMinDto(

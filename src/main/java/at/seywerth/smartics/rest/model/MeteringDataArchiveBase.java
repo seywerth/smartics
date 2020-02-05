@@ -40,6 +40,10 @@ public abstract class MeteringDataArchiveBase extends MeteringDataBase {
 		this.archiveFeedback = archiveFeedback;
 	}
 
+	/**
+	 * absolute produced energy.
+	 * @return Wh
+	 */
 	public BigDecimal getArchiveProduced() {
 		return archiveProduced;
 	}
@@ -48,6 +52,10 @@ public abstract class MeteringDataArchiveBase extends MeteringDataBase {
 		this.archiveProduced = archiveProduced;
 	}
 
+	/**
+	 * absolute consumed energy from grid.
+	 * @return Wh
+	 */
 	public BigDecimal getArchiveConsumed() {
 		return archiveConsumed;
 	}
@@ -56,6 +64,10 @@ public abstract class MeteringDataArchiveBase extends MeteringDataBase {
 		this.archiveConsumed = archiveConsumed;
 	}
 
+	/**
+	 * absolute fed back data including locally consumed energy.
+	 * @return Wh
+	 */
 	public BigDecimal getArchiveFeedback() {
 		return archiveFeedback;
 	}
