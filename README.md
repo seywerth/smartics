@@ -117,11 +117,15 @@ inspect output of smartics/log:
 - fix liquibase (add correctly to project, generate diff)
 - handle inverter errors
 + add archived data from inverter
+- archive data: correct 1st entry min of day not gotten and visualization in consumed-graph/path
 - cleanup springboot (remove unnecessary dependencies)
 
-- graphical views (produced/consumed/feedback data)
++ general graphical view (produced/consumed/feedback data)
+- graphical view of produced=consumed/feedback, consumed=from grid/produced
 - enable analysis of consumed power (add logic to calculate spikes,..)
-- add go-e charger access (set ampere according to +energy available)
++ add go-e charger access (set ampere according to +energy available)
+- add go-e charger funktionality of setting end ampere
+- add historical charging data (+repo, graph?)
 - add configuration (for inverter ip, cost of kw hour,..)
 - add time difference calculation
 
