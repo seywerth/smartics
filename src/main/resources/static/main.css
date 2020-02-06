@@ -1,14 +1,21 @@
+body {
+	font-family: "Verdana", sans-serif;
+	font-size: small;
+}
+
 table {
-    border-collapse: collapse;
+	border-collapse: collapse;
+	border: 1px solid #bbddbb;
 }
 
 td, th {
-    border: 1px solid #999;
-    padding: 0.5rem;
-    text-align: left;
+	border: 0px;
+	padding: 0.2rem;
+	text-align: left;
+	vertical-align: top;
 }
 
 .grid .tick line {
-    stroke: darkgrey;
-    opacity: 0.7;
+	stroke: darkgrey;
+	opacity: 0.7;
 }

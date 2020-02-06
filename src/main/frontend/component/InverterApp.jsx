@@ -48,25 +48,46 @@ class InverterApp extends Component {
    render() {
       return (
          <div>
-            <h2>inverter {this.getCurrentDate(this.state.selectDate)}</h2>
-            <div>status: {this.state.inverter.status}</div>
-            <br />
-            <div>
-               <button key="prev" onClick={this.handleNavPrev}>previous</button> &nbsp;
-						{this.prettyDate(this.state.inverter.fromTime)} - {this.prettyDate(this.state.inverter.untilTime)} &nbsp;
-						<button key="next" onClick={this.handleNavNext}>next</button>
-            </div>
-            <br />
-            <div>produced: {this.state.inverter.powerProduced}</div>
-            <div>feedback: {this.state.inverter.powerFeedback}</div>
-            <br />
-            <div>consumed: {this.state.inverter.powerConsumed}</div>
-            <div>from network: {this.state.inverter.powerFromNetwork}</div>
-            <div>from production: {this.state.inverter.powerFromProduction}</div>
-            <div>autonomy: {this.state.inverter.autonomy}</div>
-
-            <EnergyChart data={this.getEnergyForMins(this.state.inverter.meteringDataMinDtos)} size={[550, 300]}
-               showline={this.getCurrentDate(new Date()) == this.getCurrentDate(this.state.selectDate)} />
+            <table>
+               <thead></thead>
+               <tbody>
+                  <tr>
+                     <td><img src='images/inverter.png' width='110px' /></td>
+                     <td>
+                        <h2>inverter {this.getCurrentDate(this.state.selectDate)}</h2>
+                        <div>status: {this.state.inverter.status}</div>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                        <div>produced: {this.state.inverter.powerProduced}</div>
+                        <div>feedback: {this.state.inverter.powerFeedback}</div>
+                        <div>autonomy: {this.state.inverter.autonomy}</div>
+                     </td>
+                     <td>
+                        <div>consumed: {this.state.inverter.powerConsumed}</div>
+                        <div>from network: {this.state.inverter.powerFromNetwork}</div>
+                        <div>from production: {this.state.inverter.powerFromProduction}</div>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td colSpan='2'>
+                        <EnergyChart data={this.getEnergyForMins(this.state.inverter.meteringDataMinDtos)} size={[550, 300]}
+                           showline={this.getCurrentDate(new Date()) == this.getCurrentDate(this.state.selectDate)} />
+                     </td>
+                  </tr>
+                  <tr>
+                     <td>
+                        <button key="prev" onClick={this.handleNavPrev}>&lt; previous day</button> &nbsp;
+                        {this.prettyDate(this.state.inverter.fromTime)}
+                     </td>
+                     <td>
+                        {this.prettyDate(this.state.inverter.untilTime)} &nbsp;
+                        <button key="next" onClick={this.handleNavNext}>next day &gt;</button>
+                     </td>
+                  </tr>
+               </tbody>
+            </table>
          </div >
       );
    }
