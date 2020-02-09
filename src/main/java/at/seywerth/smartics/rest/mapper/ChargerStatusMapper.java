@@ -1,5 +1,6 @@
 package at.seywerth.smartics.rest.mapper;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.time.Instant;
 
@@ -28,8 +29,13 @@ public class ChargerStatusMapper {
 	 * 
 	 * @param rootNode
 	 * @return {@link ChargerStatusDto}
+	 * @throws IOException 
 	 */
-	public static ChargerStatusDto convertToDto(JsonNode rootNode) {
+	public static ChargerStatusDto convertToDto(JsonNode rootNode) throws IOException {
+	   if (rootNode == null) {
+	      // TODO use custom exception ChargerReadError?
+	      throw new IOException("ChargerStatusMapper: rootNode was null!");
+	   }
 		// map json
 		Instant currentTime = getInstant(rootNode.get("tme").asText());
 		Integer connectionStatus = getInteger(rootNode.get("car").asText());

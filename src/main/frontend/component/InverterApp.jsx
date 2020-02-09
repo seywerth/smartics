@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import EnergyChart from "./EnergyChart.jsx";
+import PowerChart from "./PowerChart.jsx";
 
 class InverterApp extends Component {
 
@@ -72,8 +73,15 @@ class InverterApp extends Component {
                   </tr>
                   <tr>
                      <td colSpan='2'>
-                        <EnergyChart data={this.getEnergyForMins(this.state.inverter.meteringDataMinDtos)} size={[550, 300]}
-                           showline={this.getCurrentDate(new Date()) == this.getCurrentDate(this.state.selectDate)} />
+                        <div>
+                           <PowerChart data={this.getPowerForChart(this.state.inverter)} size={[550, 80]} />
+                        </div>
+                     
+                        <div>
+                           <EnergyChart data={this.getEnergyForMins(this.state.inverter.meteringDataMinDtos)} size={[550, 300]}
+                              showline={this.getCurrentDate(new Date()) == this.getCurrentDate(this.state.selectDate)}
+                              maxwh={5500} />
+                        </div>
                      </td>
                   </tr>
                   <tr>
@@ -90,6 +98,14 @@ class InverterApp extends Component {
             </table>
          </div >
       );
+   }
+
+   getPowerForChart(data) {
+      return { produced: data.powerProduced,
+               feedback: data.powerFeedback,
+               consumed: data.powerConsumed,
+               fromgrid: data.powerFromNetwork,
+               fromprod: data.powerFromProduction };
    }
 
    selectPreviousDay(selectDate) {
@@ -117,7 +133,10 @@ class InverterApp extends Component {
          return [];
       }
       // multiply 5min by 12 to get Wh
-      return dto.map(item => [this.prettyTime(item.startTime), item.powerConsumed * 12, item.powerProduced * 12]);
+      return dto.map(item => [this.prettyTime(item.startTime),
+                              item.powerConsumed * 12,
+                              item.powerProduced * 12,
+                              item.status]);
    }
 
    prettyTime(jsonDate) {

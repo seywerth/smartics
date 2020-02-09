@@ -5,6 +5,28 @@ This is a Springboot application to run with MariaDB as Database accessed via JP
 It runs with Java OpenJDK 8 to 11.
 Time to setup: (depending on linux experience level) 5 to 20 mins.
 
+
+## ChangeLog:
+
+v0.1.3 in progress
+- added powerchart to visualize total metering data (produced vs consumed)
+- visualized status for metering data in energychart (green line/circles on not full data)
+- fixed error on bad charger response data
+- added bootstrap and responsive layout
+
+v0.1.2
+- smart charging including evaluation every rough/5-min data
+- added react frontend with basic charger overview and settings
+- added d3 energy chart for inverter overview incl. consumption and production data
+- additional settings check and setup on startup of app
+
+v0.1.1
+- inverter repository and service to access basic inverter data
+- charger repository and service to access basic charger data
+- scheduler for detail/rough/daily inverter data summaries
+- setting repository and service to access basic setting data
+
+
 ## Installation
 pack as jar with: mvn install
 and run with (on f.e. a raspberry pie 3) or automatic as a service like described below:
@@ -41,7 +63,8 @@ the same can be added by replacing 'localhost' with the ip of the remote system 
 
 > sudo nano /etc/rsyslog.d/smartics.conf
 
-if $programname == 'smartics' then /var/log/smartics-0.1.2.log
+if $programname == 'smartics' then /var/log/smartics-0.1.log
+if $programname == 'smartics' and $msg contains 'ERROR' then /var/log/smartics-0.1-error.log
 if $programname == 'smartics' then stop
 
 > sudo systemctl restart rsyslog
@@ -57,7 +80,7 @@ smartics.service:
  [Service]
  Type=idle
  WorkingDirectory=/opt/smartics
- ExecStart=/usr/bin/java -jar smartics-0.1.2.jar > smartics-0.1.2.log 2>&1
+ ExecStart=/usr/bin/java -jar smartics-0.1.2.jar
  StandardOutput=syslog
  StandardError=syslog
  SyslogIdentifier=smartics
@@ -110,15 +133,24 @@ restart service after update:
 > sudo systemctl restart smartics.service
 
 inspect output of smartics/log:
-> tail /var/log/smartics-0.1.2.log -f
+> tail /var/log/smartics-0.1.log -f
+
+
+## bugs
+- charger: error on status-set leads to error in ChargerRepositoryImpl leading to killing of scheduler!!
+- inverterarchiverecalc produces daily summary, leading to 416/missing data if done for today (won't override at end of day)
+- inverterarchiverecalc produces rough/min entry for current time that won't be overridden in next run (rough already ran)
+~ energyChart: consumption can be more: 7,000 Wh - paint extrem values extra?
++ energyChart: production values over night are 0 - skip rect for those values! (do not add to array)
+- archive data: correct 1st entry min of day not gotten and visualization in consumed-graph/path
 
 
 ## todos
 - fix liquibase (add correctly to project, generate diff)
 - handle inverter errors
 + add archived data from inverter
-- archive data: correct 1st entry min of day not gotten and visualization in consumed-graph/path
 - cleanup springboot (remove unnecessary dependencies)
+- move node_modules out of src (for easier handling, backup)
 
 + general graphical view (produced/consumed/feedback data)
 - graphical view of produced=consumed/feedback, consumed=from grid/produced
@@ -136,18 +168,4 @@ inspect output of smartics/log:
 - raspberry pi 3 smartics startup time (including db initialization): ~60s
 - entries every 5 seconds: 17.280 a day, 6.307.200 a year, ~450mb
 - entries every 5 minutes: 288 a day, 105.120 a year, ~10mb
-
-
-## Reference Documentation
-For further reference:
-
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.2.1.RELEASE/maven-plugin/)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/docs/2.2.1.RELEASE/reference/htmlsingle/#boot-features-jpa-and-spring-data)
-
-### Guides
-The following guides illustrate how to use some features concretely:
-
-* [Accessing data with MySQL](https://spring.io/guides/gs/accessing-data-mysql/)
-* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
 

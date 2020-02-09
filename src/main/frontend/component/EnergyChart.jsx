@@ -22,7 +22,7 @@ class EnergyChart extends Component {
    createBarChart() {
       const node = this.node;
       // max Wh produced or used (5500Wh vs 500Wh in 5min = 6kWh)
-      const maxY = 5500;
+      const maxY = this.props.maxwh;
       // max entries for one day
       const maxX = 12 * 24;
       let margin = { top: 10, right: 10, bottom: 30, left: 30 },
@@ -49,60 +49,103 @@ class EnergyChart extends Component {
          .selectAll('path')
          .remove();
 
-      select(node)
-         .selectAll('rect')
-         .data(this.props.data)
-         .enter()
-         .append('rect');
-
-      select(node)
-         .selectAll('circle')
-         .data(this.props.data)
-         .enter()
-         .append('circle');
-
-      select(node)
-         .selectAll('path')
-         .data(this.props.data)
-         .enter()
-         .append('path');
+      const consumedData = this.getArrayForConsumedData(this.props.data);
+      const producedData = this.getArrayForProducedData(this.props.data);
 
       // show production
       select(node)
-         .selectAll('rect')
-         .data(this.props.data)
+         .selectAll('svg')
+         .data(producedData)
+         .enter()
+         .append('rect')
          .style('fill', '#fe9922')
-         .attr('x', d => xScale(d[0]))
-         .attr('y', d => yScale(d[2]) + margin.top)
-         .attr('height', d => height - yScale(d[2]))
+         .attr('x', d => xScale(d.time))
+         .attr('y', d => yScale(d.produced) + margin.top)
+         .attr('height', d => height - yScale(d.produced))
          .attr('width', 2);
 
       // show consumption
       select(node)
-         .selectAll('circle')
-         .data(this.props.data)
+         .selectAll('svg')
+         .data(consumedData)
+         .enter()
+         .append('circle')
          .style('fill', '#bb4444')
-         .attr('cx', d => xScale(d[0]))
-         .attr('cy', d => yScale(d[1]) + margin.top)
+         .attr('cx', d => xScale(d.time))
+         .attr('cy', d => yScale(d.consumed) + margin.top)
          .attr('r', 2)
          .style("opacity", .7);
 
+      // mark extreme values, consumption too high for graph
+      select(node)
+         .selectAll('svg')
+         .data(consumedData.filter(ar => ar.consumed >= this.props.maxwh))
+         .enter()
+         .append('circle')
+         .style('stroke', '#994444')
+         .style('fill', 'none')
+         .attr('cx', d => xScale(d.time))
+         .attr('cy', d => yScale(d.consumed) + margin.top)
+         .attr('r', 4)
+         .style("opacity", .7);
+
+      // connect lines of consumption
       const lineFunction = line()
          .x(d => xScale(d.time))
          .y(d => yScale(d.consumed) + margin.top);
 
       select(node)
-         .select('path')
-         .attr('fill', "none")
+         .selectAll('path')
+         .data([consumedData])
+         .enter()
+         .append('path')
+         .attr('fill', 'none')
          .attr('stroke', '#bb4444')
          .attr('stroke-width', 1.5)
-         .attr('d', lineFunction(this.getArrayObjectForEnergy(this.props.data)))
+         .attr('d', lineFunction(consumedData))
          .style('opacity', .5);
+
+      // mark status of values (OK/OK_PARTIAL/NOT_ENOUGH_DATA)
+      const status = this.getArrayForStatus(this.props.data);
+      select(node)
+         .selectAll('svg')
+         .data(status.filter(ar => ar.status === 'OK' || ar.status === 'OK_PARTIAL'))
+         .enter()
+         .append('circle')
+         .style('fill', '#00ff00')
+         .attr('cx', d => xScale(d.time))
+         .attr('cy', height + margin.top + 2)
+         .attr('r', 2)
+         .style("opacity", .7);
+      select(node)
+         .selectAll('svg')
+         .data(status.filter(ar => ar.status !== 'OK' && ar.status !== 'OK_PARTIAL' && ar.status !== 'NOT_ENOUGH_DATA'))
+         .enter()
+         .append('circle')
+         .style('stroke', '#666666')
+         .style('stroke-width', '2')
+         .style('fill', 'none')
+         .attr('cx', d => xScale(d.time))
+         .attr('cy', height + margin.top + 2)
+         .attr('r', 3)
+         .style("opacity", .7);
+      select(node)
+         .selectAll('svg')
+         .data(status.filter(ar => ar.status === 'NOT_ENOUGH_DATA'))
+         .enter()
+         .append('circle')
+         .style('stroke', '#bb00ff')
+         .style('stroke-width', '2')
+         .style('fill', 'none')
+         .attr('cx', d => xScale(d.time))
+         .attr('cy', height + margin.top + 2)
+         .attr('r', 3)
+         .style("opacity", .7);
 
       // prepare axis
       let yAxis = axisLeft()
          .scale(yScale)
-         .ticks(10, "s")
+         .ticks(12, "s")
          .tickSize(-width, 0, 0);
 
       const scaleTitle = scaleBand()
@@ -146,10 +189,26 @@ class EnergyChart extends Component {
       )
    }
 
-   getArrayObjectForEnergy(data) {
-      let ret = data.map(el => { return { time: el[0], consumed: el[1] }; });
-      //console.log(ret);
-      return ret;
+   getArrayForConsumedData(data) {
+      let consumedArray = data.map(el => {
+         let consumed = el[1];
+         if (el[1] > this.props.maxwh) {
+            consumed = this.props.maxwh;
+         }
+         return { time: el[0], consumed: consumed };
+      });
+      return consumedArray;
+   }
+
+   getArrayForProducedData(data) {
+      let producedArray = data.map(el => { return { time: el[0], produced: el[2] }; });
+      let resultArray = producedArray.filter(ar => ar.produced > 0);
+      return resultArray;
+   }
+
+   getArrayForStatus(data) {
+      let statusArray = data.map(el => { return { time: el[0], status: el[3] }; });
+      return statusArray;
    }
 
    getCurrentPos(width) {
@@ -164,6 +223,7 @@ class EnergyChart extends Component {
 
    get24hrsArray() {
       let times = [];
+      //let times = ['0h', '3h', '6h', '9h', '12h', '15h', '18h', '21h', '24h'];
       for (let i = 0; i <= 24; i++) {
          times[i] = i + "h";
       }

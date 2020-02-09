@@ -61,11 +61,10 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 			// map json response
 			return ChargerStatusMapper.convertToDto(rootNode);
 		} catch (IOException e) {
-			// TODO handle connection timeout
-			LOG.error("getStatusData Exception on parsing json data {}", e.getMessage());
+			// handle most common: connection timeout
+			LOG.error("getStatusData Exception on parsing json data: {}", e.getMessage());
+			return new ChargerStatusDto(null, ChargerStatus.UNDEFINED, null, null, null);
 		}
-
-		return new ChargerStatusDto(); 
 	}
 
 	@Override
@@ -90,7 +89,7 @@ public class ChargerRepositoryImpl implements ChargerRepository {
     		return ChargerStatusMapper.convertToDto(rootNode);
     	} catch (IOException e) {
     		// TODO handle connection timeout
-    		LOG.error("setStatusData Exception on parsing json data {}", e.getMessage());
+    		LOG.error("setStatusData Exception on parsing json data: {}", e.getMessage());
     	}
 
 		return new ChargerStatusDto();
@@ -113,7 +112,7 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 			LOG.error("setAmpere change to {} A on charger failed!", ampere);
     	} catch (IOException e) {
     		// TODO handle connection timeout
-    		LOG.error("setAmpere Exception on parsing json data {}", e.getMessage());
+    		LOG.error("setAmpere Exception on parsing json data: {}", e.getMessage());
     	}
 		return false;
 	}
@@ -135,7 +134,7 @@ public class ChargerRepositoryImpl implements ChargerRepository {
     		LOG.error("setColorCharging change to color {} on charger failed!", color);
     	} catch (IOException e) {
     		// TODO handle connection timeout
-    		LOG.error("setColorCharging Exception on parsing json data {}", e.getMessage());
+    		LOG.error("setColorCharging Exception on parsing json data: {}", e.getMessage());
     	}
 		return false;
 	}
@@ -157,7 +156,7 @@ public class ChargerRepositoryImpl implements ChargerRepository {
     		LOG.error("setAllowCharging setting activation on charger to {} failed!", allowCharging);
     	} catch (IOException e) {
     		// TODO handle connection timeout
-    		LOG.error("setAllowCharging Exception on parsing json data {}", e.getMessage());
+    		LOG.error("setAllowCharging Exception on parsing json data: {}", e.getMessage());
     	}
 		return false;
 	}
@@ -188,15 +187,16 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 	public void analyzeChargerStatus(Setting settingChargerMode, final MeteringDataMin meteringData) {
 		ChargerMode chargerMode = ChargerMode.getByCode(settingChargerMode.getValue());
 		// check availability
+      if (ChargerMode.UNAVAILABLE == chargerMode) {
+         LOG.info("analyzeChargerStatus: last charger state was not available, rechecking..");
+      }
 		final ChargerStatusDto chargerStatus = getStatusData();
+		if (chargerStatus == null || ChargerStatus.UNDEFINED == chargerStatus.getConnectionStatus()) {
+			LOG.info("analyzeChargerStatus: charger unavailable!");
+			return;
+		}
 		if (ChargerMode.UNAVAILABLE == chargerMode) {
-			LOG.info("analyzeChargerStatus: last charger state was not available, rechecking..");
-			if (chargerStatus == null) {
-				LOG.info("analyzeChargerStatus: charger still unavailable!");
-				return;
-			} else {
-				chargerMode = ChargerMode.DEACTIVATED;
-			}
+		   chargerMode = ChargerMode.DEACTIVATED;
 		}
 		Setting settingChargerAmp = settingService.findByName(SettingName.CHARGER_AMPERE_CURRENT);
 

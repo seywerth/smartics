@@ -2,7 +2,7 @@
   "name": "smartics",
   "version": "0.1.2",
   "description": "Smartics home automation",
-  "main": "index.js",
+  "main": "index.jsx",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/seywerth/smartics.git"
