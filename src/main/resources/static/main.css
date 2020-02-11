@@ -1,11 +1,13 @@
 body {
 	font-family: "Verdana", sans-serif;
 	font-size: small;
+	padding-top: 60px;
 }
 
 table {
 	border-collapse: collapse;
 	border: 1px solid #bbddbb;
+	margin: 4px;
 }
 
 td, th {

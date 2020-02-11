@@ -223,9 +223,12 @@ class EnergyChart extends Component {
 
    get24hrsArray() {
       let times = [];
-      //let times = ['0h', '3h', '6h', '9h', '12h', '15h', '18h', '21h', '24h'];
-      for (let i = 0; i <= 24; i++) {
-         times[i] = i + "h";
+      if (this.props.size[0] > 550) {
+         for (let i = 0; i <= 24; i++) {
+            times[i] = i + "h";
+         }
+      } else {
+         times = ['0h', '3h', '6h', '9h', '12h', '15h', '18h', '21h', '24h'];
       }
       return times;
    }

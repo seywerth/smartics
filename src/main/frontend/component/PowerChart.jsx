@@ -24,7 +24,7 @@ class PowerChart extends Component {
       const maxY = this.props.size[1];
       // total Wh: fromgrid + fromprod + feedback
       const maxX = this.props.data.fromgrid + this.props.data.fromprod + this.props.data.feedback;
-      let margin = { top: 10, right: 10, bottom: 30, left: 10 },
+      let margin = { top: 16, right: 10, bottom: 30, left: 30 },
          width = this.props.size[0] - margin.left - margin.right,
          height = this.props.size[1] - margin.top - margin.bottom;
       const xScale = scaleLinear()
@@ -40,6 +40,9 @@ class PowerChart extends Component {
          .remove();
       select(node)
          .selectAll('rect')
+         .remove();
+      select(node)
+         .selectAll('text')
          .remove();
 
       // show consumption
@@ -73,18 +76,87 @@ class PowerChart extends Component {
             .attr('width', prodWidth);
       }
 
+      // show text
+      const consumedText = (this.isLarge()) ? 'consumed: ' + this.formatToKWh(this.props.data.consumed) : '- ' + this.formatToKWh(this.props.data.consumed);
+      const consStartX = margin.left + 3;
+      select(node)
+         .selectAll('svg')
+         .data([this.props.data.consumed])
+         .enter()
+         .append('text')
+         .text(consumedText)
+         .style('fill', '#bb4444')
+         .style('font-size', '14px')
+         .style('font-weight', 'bold')
+         .attr('x', consStartX)
+         .attr('y', margin.top - 4);
+
+      const fromGridText = (this.isLarge()) ? 'from grid: ' + this.formatToKWh(this.props.data.fromgrid) : '- ' + this.formatToKWh(this.props.data.fromgrid);
+      select(node)
+         .selectAll('svg')
+         .data([this.props.data.fromgrid])
+         .enter()
+         .append('text')
+         .text(fromGridText)
+         .style('fill', '#bb4444')
+         .style('font-size', '14px')
+         .style('font-weight', 'bold')
+         .attr('x', consStartX)
+         .attr('y', margin.top + 15);
+
+      if (prodWidth > 0) {
+         const producedText = (this.isLarge()) ? 'produced: ' + this.formatToKWh(this.props.data.produced) : '+ ' + this.formatToKWh(this.props.data.produced);
+         const prodEndX = (this.isLarge()) ? xScale(maxX) - margin.left - 120 : xScale(maxX) - margin.left - 60;
+         select(node)
+            .selectAll('svg')
+            .data([this.props.data.produced])
+            .enter()
+            .append('text')
+            .text(producedText)
+            .style('fill', '#fe9922')
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .attr('x', prodEndX)
+            .attr('y', margin.top - 0);
+   
+         const feedbackText =  (this.isLarge()) ? 'feedback: ' + this.formatToKWh(this.props.data.feedback) : '+ ' + this.formatToKWh(this.props.data.feedback);
+         select(node)
+            .selectAll('svg')
+            .data([this.props.data.feedback])
+            .enter()
+            .append('text')
+            .text(feedbackText)
+            .style('fill', '#fe9922')
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .attr('x', prodEndX)
+            .attr('y', margin.top + 20);
+
+         const fromProdText =  (this.isLarge()) ? 'from prod: ' + this.formatToKWh(this.props.data.fromprod) : '= ' + this.formatToKWh(this.props.data.fromprod);
+         const prodStartX = xScale(this.props.data.fromgrid) + 6;
+         select(node)
+            .selectAll('svg')
+            .data([this.props.data.fromprod])
+            .enter()
+            .append('text')
+            .text(fromProdText)
+            .style('fill', '#fe9922')
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .attr('x', prodStartX)
+            .attr('y', margin.top + 20);
+      }
+
+      // show axis
       let xAxis = axisBottom(xScale)
          .ticks(12, "s")
          .tickSizeOuter(0);
 
-      // show axis
       select(node)
          .append('g')
          .attr('transform', `translate(0,${margin.top + height})`)
          .call(xAxis)
-         .selectAll("text")
-         .attr("transform", "translate(-5,5)rotate(-45)")
-         .style("text-anchor", "end");
+         .selectAll("text");
 
    }
 
@@ -93,6 +165,18 @@ class PowerChart extends Component {
          <svg ref={node => this.node = node} width={this.props.size[0]} height={this.props.size[1]}>
          </svg>
       )
+   }
+
+   isLarge() {
+      return this.props.size[0] > 550;      
+   }
+
+   formatToKWh(number) {
+      let reformat = 0;
+      if (number !== undefined) {
+         reformat = number / 1000;
+      }
+      return reformat.toFixed(2) + " kWh";
    }
 
 }
