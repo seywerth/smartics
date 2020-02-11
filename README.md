@@ -8,7 +8,7 @@ Time to setup: (depending on linux experience level) 5 to 20 mins.
 
 ## ChangeLog:
 
-v0.1.3 in progress
+v0.1.3
 - added powerchart to visualize total metering data (produced vs consumed)
 - visualized status for metering data in energychart (green line/circles on not full data)
 - fixed error on bad charger response data
@@ -30,7 +30,7 @@ v0.1.1
 ## Installation
 pack as jar with: mvn install
 and run with (on f.e. a raspberry pie 3) or automatic as a service like described below:
-> java -jar smartics-0.1.1.jar -Dspring.jpa.database-platform=org.hibernate.dialect.MariaDBDialect
+> java -jar smartics.jar -Dspring.jpa.database-platform=org.hibernate.dialect.MariaDBDialect
 
 ### prepare database and Java
 
@@ -80,7 +80,7 @@ smartics.service:
  [Service]
  Type=idle
  WorkingDirectory=/opt/smartics
- ExecStart=/usr/bin/java -jar smartics-0.1.2.jar
+ ExecStart=/usr/bin/java -jar smartics.jar
  StandardOutput=syslog
  StandardError=syslog
  SyslogIdentifier=smartics
@@ -123,11 +123,11 @@ connect to mariadb remotely (skip-binding in my.cnf; grant user-access):
 > sudo service mariadb restart
 
 install pscp.exe for accessing and copying files: (use location of jar and tmp folder on pi)
-> ./pscp.exe d:/development/workspace2019/smartics/target/smartics-0.1.2-SNAPSHOT.jar pi@192.168.1.162:/tmp/smartics-0.1.2.jar
+> ./pscp.exe d:/development/workspace2019/smartics/target/smartics-0.1.3-SNAPSHOT.jar pi@192.168.1.162:/tmp/smartics-0.1.3.jar
 
 copy file from temp folder:
 > sudo mkdir /opt/smartics
-> sudo mv /tmp/smartics-0.1.2.jar /opt/smartics/
+> sudo mv /tmp/smartics-0.1.3.jar /opt/smartics/
 
 restart service after update:
 > sudo systemctl restart smartics.service
@@ -154,6 +154,7 @@ inspect output of smartics/log:
 
 + general graphical view (produced/consumed/feedback data)
 - graphical view of produced=consumed/feedback, consumed=from grid/produced
+~ responsive design (to use on mobile and screen)
 - enable analysis of consumed power (add logic to calculate spikes,..)
 + add go-e charger access (set ampere according to +energy available)
 - add go-e charger funktionality of setting end ampere
