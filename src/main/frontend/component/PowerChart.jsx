@@ -45,39 +45,42 @@ class PowerChart extends Component {
          .selectAll('text')
          .remove();
 
-      // show consumption
-      select(node)
-         .selectAll('svg')
-         .data([this.props.data.consumed])
-         .enter()
-         .append('rect')
-         .style('stroke', '#bb4444')
-         .style('stroke-width', '2')
-         .style('fill', 'none')
-         .attr('x', margin.left + 1)
-         .attr('y', margin.top)
-         .attr('height', yScale(20))
-         .attr('width', xScale(this.props.data.consumed) - margin.left);
-
-      // show production
-      const prodWidth = xScale(this.props.data.produced) - margin.left;
-      if (prodWidth > 0) {
+      // might be initialized at this.props.data = [], producing an error at width
+      if (this.props.data.consumed !== undefined) {
+         // show consumption
          select(node)
             .selectAll('svg')
-            .data([this.props.data.produced])
+            .data([this.props.data.consumed])
             .enter()
             .append('rect')
-            .style('stroke', '#fe9922')
+            .style('stroke', '#bb4444')
             .style('stroke-width', '2')
             .style('fill', 'none')
-            .attr('x', xScale(this.props.data.fromgrid))
-            .attr('y', yScale(70) + margin.top)
+            .attr('x', margin.left + 1)
+            .attr('y', margin.top)
             .attr('height', yScale(20))
-            .attr('width', prodWidth);
+            .attr('width', xScale(this.props.data.consumed) - margin.left);
+
+         // show production
+         const prodWidth = xScale(this.props.data.produced) - margin.left;
+         if (this.props.data.produced > 0) {
+            select(node)
+               .selectAll('svg')
+               .data([this.props.data.produced])
+               .enter()
+               .append('rect')
+               .style('stroke', '#fe9922')
+               .style('stroke-width', '2')
+               .style('fill', 'none')
+               .attr('x', xScale(this.props.data.fromgrid))
+               .attr('y', yScale(70) + margin.top)
+               .attr('height', yScale(20))
+               .attr('width', prodWidth);
+         }
       }
 
       // show text
-      const consumedText = (this.isLarge()) ? 'consumed: ' + this.formatToKWh(this.props.data.consumed) : '- ' + this.formatToKWh(this.props.data.consumed);
+      const consumedText = (this.isLarge()) ? 'consumed.. ' + this.formatToKWh(this.props.data.consumed) : '- ' + this.formatToKWh(this.props.data.consumed);
       const consStartX = margin.left + 3;
       select(node)
          .selectAll('svg')
@@ -86,12 +89,12 @@ class PowerChart extends Component {
          .append('text')
          .text(consumedText)
          .style('fill', '#bb4444')
-         .style('font-size', '14px')
+         .style('font-size', '1em')
          .style('font-weight', 'bold')
          .attr('x', consStartX)
          .attr('y', margin.top - 4);
 
-      const fromGridText = (this.isLarge()) ? 'from grid: ' + this.formatToKWh(this.props.data.fromgrid) : '- ' + this.formatToKWh(this.props.data.fromgrid);
+      const fromGridText = (this.isLarge()) ? 'from grid...... ' + this.formatToKWh(this.props.data.fromgrid) : '- ' + this.formatToKWh(this.props.data.fromgrid);
       select(node)
          .selectAll('svg')
          .data([this.props.data.fromgrid])
@@ -99,14 +102,13 @@ class PowerChart extends Component {
          .append('text')
          .text(fromGridText)
          .style('fill', '#bb4444')
-         .style('font-size', '14px')
-         .style('font-weight', 'bold')
-         .attr('x', consStartX)
+         .style('font-size', '1em')
+         .attr('x', consStartX + 2)
          .attr('y', margin.top + 15);
 
-      if (prodWidth > 0) {
-         const producedText = (this.isLarge()) ? 'produced: ' + this.formatToKWh(this.props.data.produced) : '+ ' + this.formatToKWh(this.props.data.produced);
-         const prodEndX = (this.isLarge()) ? xScale(maxX) - margin.left - 120 : xScale(maxX) - margin.left - 60;
+      if (this.props.data.produced > 0) {
+         const producedText = (this.isLarge()) ? 'produced.. ' + this.formatToKWh(this.props.data.produced) : '+ ' + this.formatToKWh(this.props.data.produced);
+         const prodEndX = (this.isLarge()) ? xScale(maxX) - margin.left - 134 : xScale(maxX) - margin.left - 66;
          select(node)
             .selectAll('svg')
             .data([this.props.data.produced])
@@ -114,12 +116,12 @@ class PowerChart extends Component {
             .append('text')
             .text(producedText)
             .style('fill', '#fe9922')
-            .style('font-size', '14px')
+            .style('font-size', '1em')
             .style('font-weight', 'bold')
             .attr('x', prodEndX)
-            .attr('y', margin.top - 0);
+            .attr('y', margin.top);
    
-         const feedbackText =  (this.isLarge()) ? 'feedback: ' + this.formatToKWh(this.props.data.feedback) : '+ ' + this.formatToKWh(this.props.data.feedback);
+         const feedbackText =  (this.isLarge()) ? 'feedback..... ' + this.formatToKWh(this.props.data.feedback) : '+ ' + this.formatToKWh(this.props.data.feedback);
          select(node)
             .selectAll('svg')
             .data([this.props.data.feedback])
@@ -127,23 +129,8 @@ class PowerChart extends Component {
             .append('text')
             .text(feedbackText)
             .style('fill', '#fe9922')
-            .style('font-size', '14px')
-            .style('font-weight', 'bold')
+            .style('font-size', '1em')
             .attr('x', prodEndX)
-            .attr('y', margin.top + 20);
-
-         const fromProdText =  (this.isLarge()) ? 'from prod: ' + this.formatToKWh(this.props.data.fromprod) : '= ' + this.formatToKWh(this.props.data.fromprod);
-         const prodStartX = xScale(this.props.data.fromgrid) + 6;
-         select(node)
-            .selectAll('svg')
-            .data([this.props.data.fromprod])
-            .enter()
-            .append('text')
-            .text(fromProdText)
-            .style('fill', '#fe9922')
-            .style('font-size', '14px')
-            .style('font-weight', 'bold')
-            .attr('x', prodStartX)
             .attr('y', margin.top + 20);
       }
 

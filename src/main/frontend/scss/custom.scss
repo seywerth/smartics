@@ -1,0 +1,55 @@
+@import '~bootstrap';
+
+
+// required
+//@import "../node_modules/bootstrap/scss/functions";
+//@import "../node_modules/bootstrap/scss/variables";
+//@import "../node_modules/bootstrap/scss/mixins";
+
+// override bootstrap
+
+.col-lg-4, .col-lg-8 {
+   padding-left: 2px;
+   padding-right: 2px;
+}
+
+
+// standard html
+
+body {
+   font-family: "Verdana", sans-serif;
+   font-size: 0.8rem;
+   padding-top: 60px;
+}
+
+table {
+   border-collapse: collapse;
+   border: 1px solid #bbddbb;
+   margin: 4px;
+}
+
+td, th {
+   border: 0px;
+   padding: 0.2rem;
+   text-align: left;
+   vertical-align: top;
+}
+
+h3 {
+   font-size: large;
+   font-weight: bold;
+}
+
+.boxed {
+   border: 1px solid #bbddbb;
+   padding: 4px;
+   margin: 4px;
+}
+
+// d3 library
+
+.grid .tick line {
+   stroke: darkgrey;
+   opacity: 0.7;
+}
+

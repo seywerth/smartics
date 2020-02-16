@@ -53,6 +53,7 @@ class EnergyChart extends Component {
       const producedData = this.getArrayForProducedData(this.props.data);
 
       // show production
+      const rectWidth = (this.props.size[0] > 700) ? 2 : 1;
       select(node)
          .selectAll('svg')
          .data(producedData)
@@ -62,7 +63,7 @@ class EnergyChart extends Component {
          .attr('x', d => xScale(d.time))
          .attr('y', d => yScale(d.produced) + margin.top)
          .attr('height', d => height - yScale(d.produced))
-         .attr('width', 2);
+         .attr('width', rectWidth);
 
       // show consumption
       select(node)

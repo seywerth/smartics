@@ -2,7 +2,9 @@ var path = require('path');
 var HtmlWebPackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-   entry : './index.jsx',
+   entry : {
+      main : [ './index.jsx', './scss/custom.scss' ]
+   },
    cache : true,
    mode : 'development',
    output : {
@@ -10,7 +12,7 @@ module.exports = {
       filename : 'bundle.js'
    },
    resolve : {
-      extensions : [ '.js', '.jsx' ]
+      extensions : [ '.js', '.jsx', '.scss', '.css' ]
    },
    module : {
       rules : [ {
@@ -25,8 +27,18 @@ module.exports = {
             loader : "html-loader"
          } ]
       }, {
-         test: /\.css$/,
-         use: ['style-loader', 'css-loader']
+         test : /\.(s[ac]ss)$/,
+         use : [ {
+            loader : 'style-loader', // inject CSS to page
+         }, {
+            loader : 'css-loader', // translates CSS into CommonJS modules
+            options: {
+               sourceMap: true,
+               importLoaders: 1
+           }
+         }, {
+            loader : 'sass-loader' // compiles Sass to CSS
+         } ]
       } ]
    },
    plugins : [ new HtmlWebPackPlugin({

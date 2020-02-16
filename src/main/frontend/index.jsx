@@ -8,7 +8,7 @@ import Col from 'react-bootstrap/Col';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 
-import 'bootstrap/dist/css/bootstrap.min.css';
+import './scss/custom.scss';
 
 class Index extends Component {
    render() {
@@ -36,7 +36,7 @@ class Index extends Component {
                <Col lg={4}>
                   <ChargerApp />
                </Col>
-               <Col lg={6}>
+               <Col lg={8}>
                   <InverterApp />
                </Col>
             </Row>

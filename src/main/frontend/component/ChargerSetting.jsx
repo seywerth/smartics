@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 
 class ChargerSetting extends Component {
 
@@ -30,8 +32,7 @@ class ChargerSetting extends Component {
          .catch(console.log)
    }
 
-   handleModeChange(event) {
-      let selected = event.target.value;
+   handleModeChange(selected) {
       fetch('api/charger/mode', {
          method: 'PUT',
          body: selected,
@@ -78,12 +79,12 @@ class ChargerSetting extends Component {
          <div>
             <h3>setting</h3>
             <div>mode:
-						<select value={this.state.mode} onChange={this.handleModeChange}>
-                  <option value="SMART">smart</option>
-                  <option value="FIXED">fixed ampere</option>
-                  <option value="DEACTIVATED">deactivated</option>
-                  <option value="UNAVAILABLE">unavailable</option>
-               </select>
+					<DropdownButton alignRight variant='outline-secondary' size='sm' title={this.state.mode} onSelect={this.handleModeChange}>
+                  <Dropdown.Item eventKey="SMART">SMART</Dropdown.Item>
+                  <Dropdown.Item eventKey="FIXED">FIXED</Dropdown.Item>
+                  <Dropdown.Item eventKey="DEACTIVATED">DEACTIVATED</Dropdown.Item>
+                  <Dropdown.Item eventKey="UNAVAILABLE">UNAVAILABLE</Dropdown.Item>
+               </DropdownButton>
             </div>
             <br />
             <div>ampere:
@@ -91,9 +92,7 @@ class ChargerSetting extends Component {
                   {this.getAmpereOptions(16)}
                </select>
             </div>
-            <br />
-            <div>volt: {this.state.voltage}</div>
-            <br />
+            <div>{this.state.voltage} V</div>
          </div>
       )
    }

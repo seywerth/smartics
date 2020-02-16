@@ -8,6 +8,12 @@ Time to setup: (depending on linux experience level) 5 to 20 mins.
 
 ## ChangeLog:
 
+v0.1.4 (in progress)
+- added chart to visualize current energy input and output
+- using scss to generate style
+- improve responsive design especially for small screens
+- added logging of charging data
+
 v0.1.3
 - added powerchart to visualize total metering data (produced vs consumed)
 - visualized status for metering data in energychart (green line/circles on not full data)
@@ -123,11 +129,11 @@ connect to mariadb remotely (skip-binding in my.cnf; grant user-access):
 > sudo service mariadb restart
 
 install pscp.exe for accessing and copying files: (use location of jar and tmp folder on pi)
-> ./pscp.exe d:/development/workspace2019/smartics/target/smartics-0.1.3-SNAPSHOT.jar pi@192.168.1.162:/tmp/smartics-0.1.3.jar
+> ./pscp.exe d:/development/workspace2019/smartics/target/smartics-0.1.4-SNAPSHOT.jar pi@192.168.1.162:/tmp/smartics-0.1.4.jar
 
 copy file from temp folder:
 > sudo mkdir /opt/smartics
-> sudo mv /tmp/smartics-0.1.3.jar /opt/smartics/
+> sudo mv /tmp/smartics-0.1.4.jar /opt/smartics/
 
 restart service after update:
 > sudo systemctl restart smartics.service

@@ -11,7 +11,7 @@ public enum SettingName {
 	/**
 	 * version of app
 	 */
-	VERSION("0.1.3", "current version"),
+	VERSION("0.1.4", "current version"),
 	/**
 	 * enable automatic daily logger
 	 */

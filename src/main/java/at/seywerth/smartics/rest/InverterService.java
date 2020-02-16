@@ -1,5 +1,6 @@
 package at.seywerth.smartics.rest;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -15,6 +16,7 @@ import at.seywerth.smartics.rest.api.InverterRepository;
 import at.seywerth.smartics.rest.mapper.InverterArchiveMapper;
 import at.seywerth.smartics.rest.model.InverterDto;
 import at.seywerth.smartics.rest.model.InverterStatus;
+import at.seywerth.smartics.rest.model.MeteringDataCurrentDto;
 import at.seywerth.smartics.rest.model.MeteringDataDay;
 import at.seywerth.smartics.rest.model.MeteringDataMin;
 import at.seywerth.smartics.rest.model.MeteringDataMinDto;
@@ -104,6 +106,22 @@ public class InverterService {
 		}
 
 		return resultList;
+	}
+
+	public MeteringDataCurrentDto currentSummary() {
+	   MeteringDataCurrentDto dto = new MeteringDataCurrentDto();
+	   MeteringDataSec data = meteringDataSecService.getLatest();
+	   if (data != null) {
+	      dto.setCreationTime(data.getCreationTime().toInstant());
+	      dto.setPowerConsumed(data.getPowerConsumed());
+	      dto.setPowerProduced(data.getPowerProduced() != null ? data.getPowerProduced() : BigDecimal.ZERO);
+	      dto.setPowerFeedback(data.getPowerFeedback() != null ? data.getPowerFeedback() : BigDecimal.ZERO);
+	      dto.setStatus(InverterStatus.getByCode(data.getStatusCode()));
+	      dto.setPowerFromNetwork(InverterCalculatorUtil.getBigDecimal(
+	            InverterCalculatorUtil.calcPowerFromNetwork(dto.getPowerConsumed(), dto.getPowerProduced(), dto.getPowerFeedback())));
+	      dto.setPowerFromProduction(InverterCalculatorUtil.calcPowerFromProduction(dto.getPowerProduced(), dto.getPowerFeedback()));
+	   }
+	   return dto;
 	}
 
 	public MeteringDataSummaryDto calculateSummary(String day) {

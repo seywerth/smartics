@@ -20,7 +20,7 @@ class ChargerApp extends Component {
    render() {
       return (
          <div>
-            <table width='100%'>
+            <table>
                <thead></thead>
                <tbody>
                   <tr>
@@ -31,7 +31,7 @@ class ChargerApp extends Component {
                         <h3>charger</h3>
                         <div>connection: {this.state.charger.connectionStatus}</div>
                         <br />
-                        <div>temp: {this.state.charger.temperature} °C</div>
+                        <div>charging: {String(this.state.charger.allowCharging)}</div>
                         <div>total: {(this.state.charger.loadedMkWhTotal / 10)} kWh</div>
                      </td>
                      <td rowSpan='2'>
@@ -40,8 +40,8 @@ class ChargerApp extends Component {
                   </tr>
                   <tr>
                      <td>
-                        <div>charging: {String(this.state.charger.allowCharging)}</div>
-                        <div>ampere: {this.state.charger.ampere}</div>
+                        <div>{this.state.charger.temperature} °C</div>
+                        <div>{this.state.charger.ampere} A</div>
                      </td>
                      <td>
                         <div>autostop: {String(this.state.charger.autoStop)}</div>
