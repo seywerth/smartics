@@ -6,6 +6,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +19,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import at.seywerth.smartics.rest.api.ChargerRepository;
+import at.seywerth.smartics.rest.api.ChargingDataRepository;
 import at.seywerth.smartics.rest.mapper.ChargerStatusMapper;
 import at.seywerth.smartics.rest.model.ChargerMode;
 import at.seywerth.smartics.rest.model.ChargerStatus;
 import at.seywerth.smartics.rest.model.ChargerStatusDto;
+import at.seywerth.smartics.rest.model.ChargingData;
 import at.seywerth.smartics.rest.model.MeteringDataMin;
 import at.seywerth.smartics.rest.model.Setting;
 import at.seywerth.smartics.rest.model.SettingName;
@@ -50,6 +55,8 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 	private ObjectMapper mapper;
 	@Autowired
 	private SettingService settingService;
+	@Autowired
+	private ChargingDataRepository chargingDataRepository;
 
 
 	@Override
@@ -198,19 +205,28 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 		if (ChargerMode.UNAVAILABLE == chargerMode) {
 		   chargerMode = ChargerMode.DEACTIVATED;
 		}
+      // devide by Volt
+      Setting settingChargerVolt = settingService.findByName(SettingName.CHARGER_VOLTAGE);
+      if (settingChargerVolt == null || settingChargerVolt.getValue().isEmpty()) {
+         LOG.error("analyzeChargerStatus: voltage has not been specified for charger, no smart charging!");
+         return;
+      }
+      Integer voltage = Integer.parseInt(settingChargerVolt.getValue());
+      // write charging summary for last minutes
+		createChargingDataEntry(chargerStatus, chargerMode, voltage);
 		Setting settingChargerAmp = settingService.findByName(SettingName.CHARGER_AMPERE_CURRENT);
 
 		// read on true..
 		if (ChargerMode.SMART == chargerMode) {
 			// calculate ampere and color for charging
-			final Integer currentAmpere = calculateSmartCharging(chargerStatus, meteringData);
+			final Integer currentAmpere = calculateSmartCharging(chargerStatus, meteringData, voltage);
 			if (currentAmpere != null) {
 				settingChargerAmp.setValue(String.valueOf(currentAmpere));
 				settingService.save(settingChargerAmp);
 			}
 		} else {
 			// update charger state from charger
-			if (chargerStatus == null || chargerStatus.getConnectionStatus() == null) {
+			if (chargerStatus.getConnectionStatus() == null) {
 				settingChargerMode.setValue(ChargerMode.UNAVAILABLE.name());
 			} else if (!chargerStatus.getAllowCharging().booleanValue()) {
 				settingChargerMode.setValue(ChargerMode.DEACTIVATED.name());
@@ -225,13 +241,61 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 	}
 
 	/**
+	 * creates a charging data entry if needed.
+	 * @param chargerStatus
+	 * @param chargerMode
+	 * @param voltage
+	 */
+   protected void createChargingDataEntry(final ChargerStatusDto chargerStatus,
+                                          final ChargerMode chargerMode,
+                                          final Integer voltage) {
+      final Instant currentTime = Instant.now();
+      Timestamp startTime = Timestamp.from(currentTime);
+      Integer oldTotalMkwh = 0;
+      ChargerStatus oldConnectionStatus = ChargerStatus.UNDEFINED;
+      // read last entry for start time or current
+      final ChargingData latestData = chargingDataRepository.findTopByOrderByUntilTimeDesc();
+      if (latestData == null) {
+         LOG.info("creating charging data, no latest entry found!");
+      } else {
+         if (latestData.getUntilTime().toInstant().isAfter(currentTime)) {
+            LOG.warn("creating charging data entry skipped (last entry too recent)!");
+            return;
+         }
+         // use last end time only if last entry is no longer than 5.5 mins ago
+         if (latestData.getUntilTime().toInstant().isAfter(currentTime.minus(330, ChronoUnit.SECONDS))) {
+            startTime = latestData.getUntilTime();
+         }
+         oldTotalMkwh = latestData.getTotalMkwh();
+         oldConnectionStatus = ChargerStatus.valueOf(latestData.getConnectionStatus());
+      }
+      Integer ampere = chargerStatus.getAmpere();
+      String connectionStatus = chargerStatus.getConnectionStatus().toString();
+      Integer temperature = chargerStatus.getTemperature();
+      Integer totalMkwh = chargerStatus.getLoadedMkWhTotal();
+
+      final ChargingData data = new ChargingData(startTime, Timestamp.from(currentTime), ampere, voltage,
+            connectionStatus, chargerMode.toString(), temperature, totalMkwh);
+      // write new entry (if at least totalMkwh changed from last entry)
+      if (totalMkwh == 0 || totalMkwh > oldTotalMkwh
+            || ChargerStatus.LOADING == chargerStatus.getConnectionStatus() || ChargerStatus.LOADING == oldConnectionStatus) {
+         LOG.info("creating charging data entry ({} A, {} mkWh total).", ampere, totalMkwh);
+         chargingDataRepository.save(data);
+      } else {
+         LOG.info("creating charging data skipped (total is still: {} mkWh, status: {})!", totalMkwh, chargerStatus.getConnectionStatus());
+      }
+   }
+
+   /**
 	 * calculate and set smart charging data.
 	 * 
 	 * @param chargerStatus
 	 * @param meteringData
 	 * @return current ampere number
 	 */
-	protected Integer calculateSmartCharging(final ChargerStatusDto chargerStatus, final MeteringDataMin meteringData) {
+	protected Integer calculateSmartCharging(final ChargerStatusDto chargerStatus,
+	                                         final MeteringDataMin meteringData,
+	                                         final Integer voltage) {
 		double excessEnergyWh = meteringData.getPowerFeedback().doubleValue() * 12;
 		double extendEnergyWh = InverterCalculatorUtil.calcPowerFromNetwork(meteringData.getPowerConsumed(),
 				meteringData.getPowerProduced(), meteringData.getPowerFeedback()) * 12;
@@ -240,13 +304,8 @@ public class ChargerRepositoryImpl implements ChargerRepository {
 			return null;
 		}
 		// devide by Volt
-		Setting settingChargerVolt = settingService.findByName(SettingName.CHARGER_VOLTAGE);
-		if (settingChargerVolt == null || settingChargerVolt.getValue().isEmpty()) {
-			LOG.error("analyzeChargerStatus: voltage has not been specified for charger, no smart charging!");
-			return null;
-		}
-		double excessAmpere = excessEnergyWh / Integer.parseInt(settingChargerVolt.getValue());
-		double extendAmpere = extendEnergyWh / Integer.parseInt(settingChargerVolt.getValue());
+		double excessAmpere = excessEnergyWh / voltage;
+		double extendAmpere = extendEnergyWh / voltage;
 		LOG.info("analyzeChargerStatus: smart excess energy {} Wh, {} A", excessEnergyWh, excessAmpere);
 		LOG.info("analyzeChargerStatus: smart extend energy {} Wh, {} A", extendEnergyWh, extendAmpere);
 		// set color, activation.. if at least 2A excess

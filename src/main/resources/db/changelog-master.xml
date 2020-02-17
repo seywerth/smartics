@@ -83,4 +83,22 @@
         </addColumn>
     </changeSet>
 
+    <changeSet author="seywerth" id="1581853271138-1">
+        <createTable tableName="charging_data">
+            <column name="start_time" type="datetime(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="NULL" name="until_time" type="datetime(6)"/>
+            <column defaultValueComputed="NULL" name="ampere" type="SMALLINT"/>
+            <column defaultValueComputed="NULL" name="volt" type="SMALLINT"/>
+            <column defaultValueComputed="NULL" name="connection_status" type="VARCHAR(255)"/>
+            <column defaultValueComputed="NULL" name="charger_mode" type="VARCHAR(255)"/>
+            <column defaultValueComputed="NULL" name="temperature" type="SMALLINT"/>
+            <column defaultValueComputed="NULL" name="total_mkwh" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="seywerth" id="1581853271138-2">
+        <addPrimaryKey columnNames="start_time" constraintName="PRIMARY" tableName="charging_data"/>
+    </changeSet>
+
 </databaseChangeLog>
