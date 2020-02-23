@@ -4,7 +4,7 @@ import { select } from 'd3-selection';
 import { axisBottom, axisLeft } from 'd3-axis';
 import { line } from 'd3-shape';
 
-class EnergyChart extends Component {
+class EnergyDay extends Component {
 
    constructor(props) {
       super(props);
@@ -235,4 +235,4 @@ class EnergyChart extends Component {
    }
 }
 
-export default EnergyChart
+export default EnergyDay;

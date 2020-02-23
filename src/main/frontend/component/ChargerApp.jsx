@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import ChargerSetting from "./ChargerSetting.jsx";
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 class ChargerApp extends Component {
 
@@ -19,40 +21,29 @@ class ChargerApp extends Component {
 
    render() {
       return (
-         <div>
-            <table>
-               <thead></thead>
-               <tbody>
-                  <tr>
-                     <td>
-                        <img src='images/charger.png' width='60px' />
-                     </td>
-                     <td>
-                        <h3>charger</h3>
-                        <div>connection: {this.state.charger.connectionStatus}</div>
-                        <br />
-                        <div>charging: {String(this.state.charger.allowCharging)}</div>
-                        <div>total: {(this.state.charger.loadedMkWhTotal / 10)} kWh</div>
-                     </td>
-                     <td rowSpan='2'>
-                        <ChargerSetting />
-                     </td>
-                  </tr>
-                  <tr>
-                     <td>
-                        <div>{this.state.charger.temperature} °C</div>
-                        <div>{this.state.charger.ampere} A</div>
-                     </td>
-                     <td>
-                        <div>autostop: {String(this.state.charger.autoStop)}</div>
-                        <div>stop at: {this.state.charger.autoStopMkWh} kWh</div>
-                     </td>
-                  </tr>
-               </tbody>
-            </table>
+         <div className='boxed'>
+            <Row>
+               <Col>
+                  <img src='images/charger.png' width='60px' />
+                  <div>{this.state.charger.temperature} °C</div>
+                  <div>{this.state.charger.ampere} A</div>
+               </Col>
+               <Col>
+                  <h3>charger</h3>
+                  <div>connection: {this.state.charger.connectionStatus}</div>
+                  <br />
+                  <div>charging: {String(this.state.charger.allowCharging)}</div>
+                  <div>total: {(this.state.charger.loadedMkWhTotal / 10)} kWh</div>
+                  <div>autostop: {String(this.state.charger.autoStop)}</div>
+                  <div>stop at: {this.state.charger.autoStopMkWh} kWh</div>
+               </Col>
+               <Col>
+                  <ChargerSetting />
+               </Col>
+            </Row>
          </div>
       )
    }
 }
 
-export default ChargerApp
+export default ChargerApp;

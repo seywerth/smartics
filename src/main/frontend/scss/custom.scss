@@ -8,11 +8,25 @@
 
 // override bootstrap
 
-.col-lg-4, .col-lg-8 {
+.col-lg-4, .col-lg-8, .col-lg-12 {
    padding-left: 2px;
    padding-right: 2px;
 }
 
+.container-fluid {
+   padding-right: 0px;
+   padding-left: 0px;
+}
+
+.col {
+   padding-left: 2px;
+   padding-right: 2px;
+}
+
+.row {
+   margin-right: 0px;
+   margin-left: 0px;
+}
 
 // standard html
 
@@ -20,19 +34,6 @@ body {
    font-family: "Verdana", sans-serif;
    font-size: 0.8rem;
    padding-top: 60px;
-}
-
-table {
-   border-collapse: collapse;
-   border: 1px solid #bbddbb;
-   margin: 4px;
-}
-
-td, th {
-   border: 0px;
-   padding: 0.2rem;
-   text-align: left;
-   vertical-align: top;
 }
 
 h3 {

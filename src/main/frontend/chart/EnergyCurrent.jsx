@@ -3,7 +3,7 @@ import { scaleLinear, scaleBand } from 'd3-scale';
 import { select } from 'd3-selection';
 import { axisBottom, axisLeft } from 'd3-axis';
 
-class CurrentChart extends Component {
+class EnergyCurrent extends Component {
 
    constructor(props) {
       super(props);
@@ -120,4 +120,4 @@ class CurrentChart extends Component {
 
 }
 
-export default CurrentChart
+export default EnergyCurrent;

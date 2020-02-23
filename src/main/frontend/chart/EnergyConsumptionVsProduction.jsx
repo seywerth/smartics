@@ -3,7 +3,7 @@ import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
 import { axisBottom } from 'd3-axis';
 
-class PowerChart extends Component {
+class EnergyConsumptionVsProduction extends Component {
 
    constructor(props) {
       super(props);
@@ -168,4 +168,4 @@ class PowerChart extends Component {
 
 }
 
-export default PowerChart;
+export default EnergyConsumptionVsProduction;

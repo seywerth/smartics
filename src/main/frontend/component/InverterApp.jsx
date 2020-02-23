@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import EnergyChart from './EnergyChart.jsx';
-import PowerChart from './PowerChart.jsx';
-import CurrentChart from './CurrentChart.jsx';
+import EnergyCurrent from '../chart/EnergyCurrent.jsx';
+import EnergyConsumptionVsProduction from '../chart/EnergyConsumptionVsProduction.jsx';
+import EnergyDay from '../chart/EnergyDay.jsx';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 class InverterApp extends Component {
 
@@ -40,6 +42,7 @@ class InverterApp extends Component {
    }
 
    componentWillUnmount() {
+      window.removeEventListener('resize', this.updateWindowDimensions);
       clearInterval(this.interval);
    }
 
@@ -117,42 +120,50 @@ class InverterApp extends Component {
    render() {
       return (
          <div className='boxed'>
-            <div style={{ float: 'left' }}>
-               <img src='images/inverter.png' width='100px' />
-            </div>
-            <div style={{ float: 'left' }}>
-               <CurrentChart data={this.state.dataChartCurrent} size={[this.state.widthChartCurrent, 150]} maxwh={5500} />
-            </div>
-            <div style={{ float: 'right' }}>
-               <h3>inverter {this.getCurrentDate(this.state.selectDate)}</h3>
-               <div>status: {this.state.inverter.status}</div>
+            <Row>
+               <Col className="align-self-start">
+                  <img src='images/inverter.png' width='100px' />
+               </Col>
+               <Col>
+                  <EnergyCurrent data={this.state.dataChartCurrent} size={[this.state.widthChartCurrent, 150]} maxwh={5500} />
+               </Col>
+               <Col>
+                  <h3>inverter {this.getCurrentDate(this.state.selectDate)}</h3>
+                  <div>status: {this.state.inverter.status}</div>
 
-               <br />
-               <DropdownButton variant='outline-secondary' size='sm' title={this.state.updatechart} onSelect={this.handleUpdateChart}>
-                  <Dropdown.Item eventKey="5">refresh: 5s</Dropdown.Item>
-                  <Dropdown.Item eventKey="10">refresh: 10s</Dropdown.Item>
-                  <Dropdown.Item eventKey="15">refresh: 15s</Dropdown.Item>
-                  <Dropdown.Item eventKey="DEACTIVATED">no refresh</Dropdown.Item>
-               </DropdownButton>
-            </div>
+                  <br />
+                  <DropdownButton variant='outline-secondary' size='sm' title={this.state.updatechart} onSelect={this.handleUpdateChart}>
+                     <Dropdown.Item eventKey="5">refresh: 5s</Dropdown.Item>
+                     <Dropdown.Item eventKey="10">refresh: 10s</Dropdown.Item>
+                     <Dropdown.Item eventKey="15">refresh: 15s</Dropdown.Item>
+                     <Dropdown.Item eventKey="DEACTIVATED">no refresh</Dropdown.Item>
+                  </DropdownButton>
+               </Col>
+            </Row>
 
-            <div>
-               <PowerChart data={this.state.dataChartPower} size={[this.state.widthChartInverter, 80]} />
-            </div>
+            <Row>
+               <EnergyConsumptionVsProduction data={this.state.dataChartPower} size={[this.state.widthChartInverter, 80]} />
+            </Row>
 
-            <div>
-               <EnergyChart data={this.state.dataChartInverter} size={[this.state.widthChartInverter, 300]}
+            <Row>
+               <EnergyDay data={this.state.dataChartInverter} size={[this.state.widthChartInverter, 300]}
                   showline={this.getCurrentDate(new Date()) == this.getCurrentDate(this.state.selectDate)}
                   maxwh={5500} />
-            </div>
+            </Row>
 
-            <Button variant="outline-secondary" size='sm' key="prev" onClick={this.handleNavPrev}>
-               &lt; previous day</Button>
-            {this.prettyDate(this.state.inverter.fromTime)}
+            <Row>
+               <Col className="align-self-start">
+                  <Button variant="outline-secondary" size='sm' key="prev" onClick={this.handleNavPrev}>
+                     &lt; previous day</Button>
+                  {this.prettyDate(this.state.inverter.fromTime)}
+               </Col>
 
-            {this.prettyDate(this.state.inverter.untilTime)}
-            <Button variant='outline-secondary' size='sm' key="next" onClick={this.handleNavNext}>
-               next day &gt;</Button>
+               <Col className="align-self-end text-right">
+                  {this.prettyDate(this.state.inverter.untilTime)}
+                  <Button variant='outline-secondary' size='sm' key="next" onClick={this.handleNavNext}>
+                     next day &gt;</Button>
+               </Col>
+            </Row>
 
          </div >
       );
@@ -267,4 +278,4 @@ class InverterApp extends Component {
 }
 
 
-export default InverterApp
+export default InverterApp;
