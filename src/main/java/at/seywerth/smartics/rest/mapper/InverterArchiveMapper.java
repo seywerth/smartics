@@ -102,11 +102,13 @@ public class InverterArchiveMapper {
       BigDecimal powerFeedback = entity.getPowerFeedback();
       InverterStatus statusCode = InverterStatus.getByCode(entity.getStatusCode());
 
-      // override data with archive or zero to prevent calc error // also check for entity.getStatusCode() ?
-      if (powerProduced == null || powerProduced.compareTo(BigDecimal.ZERO) == 0) {
+      // override data with archive or zero to prevent calc error
+      if (powerProduced == null || powerProduced.compareTo(BigDecimal.ZERO) == 0
+            || InverterStatus.NOT_ENOUGH_DATA == statusCode) {
          powerProduced = entity.getArchiveProduced() != null ? entity.getArchiveProduced() : BigDecimal.ZERO;
       }
-      if (powerFeedback == null || powerFeedback.compareTo(BigDecimal.ZERO) == 0) {
+      if (powerFeedback == null || powerFeedback.compareTo(BigDecimal.ZERO) == 0
+            || InverterStatus.NOT_ENOUGH_DATA == statusCode) {
          powerFeedback = entity.getArchiveFeedback() != null ? entity.getArchiveFeedback() : BigDecimal.ZERO;
       }
       if (powerConsumed == null || powerConsumed.compareTo(BigDecimal.ZERO) == 0
