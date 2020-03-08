@@ -195,11 +195,12 @@ class InverterHistory extends Component {
          entries: entryCount,
          maxEntries: this.entriesInSelection(this.state.selectDate), // why not executed again?
          maxwh: 0,
-         avProduced: (data.powerProduced / entryCount).toFixed(2),
-         avFeedback: (data.powerFeedback / entryCount).toFixed(2),
-         avConsumed: (data.powerConsumed / entryCount).toFixed(2),
-         avFromgrid: (data.powerFromNetwork / entryCount).toFixed(2),
-         avFromprod: (data.powerFromProduction / entryCount).toFixed(2),
+         // divide by 1000 to get kWh
+         avProduced: (data.powerProduced / entryCount / 1000).toFixed(2),
+         avFeedback: (data.powerFeedback / entryCount / 1000).toFixed(2),
+         avConsumed: (data.powerConsumed / entryCount / 1000).toFixed(2),
+         avFromgrid: (data.powerFromNetwork / entryCount / 1000).toFixed(2),
+         avFromprod: (data.powerFromProduction / entryCount / 1000).toFixed(2),
          mxProduced: 0,
          mxFeedback: 0,
          mxConsumed: 0,
@@ -216,6 +217,13 @@ class InverterHistory extends Component {
          if (el.powerConsumed < eva.miConsumed)  eva.miConsumed = el.powerConsumed;
       }
       eva.maxwh = (eva.mxConsumed > eva.mxProduced) ? eva.mxConsumed : eva.mxProduced;
+      // divide by 1000 to get kWh
+      eva.mxProduced = (eva.mxProduced / 1000).toFixed(2);
+      eva.miProduced = (eva.miProduced / 1000).toFixed(2);
+      eva.mxFeedback = (eva.mxFeedback / 1000).toFixed(2);
+      eva.miFeedback = (eva.miFeedback / 1000).toFixed(2);
+      eva.mxConsumed = (eva.mxConsumed / 1000).toFixed(2);
+      eva.miConsumed = (eva.miConsumed / 1000).toFixed(2);
       //console.log(eva);
       return eva;
    }
@@ -233,7 +241,8 @@ class InverterHistory extends Component {
       if (jsonDate == undefined) {
          return date.toLocaleString();
       }
-      date.setTime(Date.parse(jsonDate));
+      // add one hour in ms to take inaccuracy of min-entry creation time into account
+      date.setTime(Date.parse(jsonDate) + 60 * 60 * 1000);
       return new Intl.DateTimeFormat("en-GB", {
             day: "2-digit"
          }).format(date);

@@ -3,6 +3,8 @@ package at.seywerth.smartics.rest;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -142,14 +144,24 @@ public class InverterService {
    	      untilTime = startTime.plus(1, unit);
    	   } else if (dateSplit.length == 2) {
    	      unit = ChronoUnit.MONTHS;
-   	      cal.set(Integer.parseInt(dateSplit[1]), Integer.parseInt(dateSplit[0]) -1, 1);
-   	      startTime = cal.toInstant();
-   	      cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
-   	      untilTime = cal.toInstant();
+   	      Integer year = Integer.parseInt(dateSplit[1]);
+   	      Integer month = Integer.parseInt(dateSplit[0]) -1;
+   	      Integer day = 1;
+   	      cal.set(year, month, day, 0, 0, 0);
+   	      cal.set(Calendar.MILLISECOND, 0);
+   	      // substract 30 mins to take inaccuracy of min-entry creation time into account
+   	      startTime = cal.toInstant().minus(30, ChronoUnit.MINUTES);
+   	      cal.set(year, month, cal.getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59);
+            // substract 30 mins to take inaccuracy of min-entry creation time into account
+   	      untilTime = cal.toInstant().minus(30, ChronoUnit.MINUTES);
    	   } else {
-            cal.set(Integer.parseInt(dateSplit[0]), 0, 1);
+            Integer year = Integer.parseInt(dateSplit[0]);
+            Integer month = 0;
+            Integer day = 1;
+            cal.set(year, month, day, 0, 0, 0);
+            cal.set(Calendar.MILLISECOND, 0);
             startTime = cal.toInstant();
-            cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR));
+            cal.set(year, 11, cal.getActualMaximum(Calendar.DAY_OF_YEAR), 23, 59, 59);
             untilTime = cal.toInstant();
    	   }
       } catch (ParseException e) {
@@ -261,7 +273,9 @@ public class InverterService {
       result.setFromTime(startTimeData);
       result.setUntilTime(untilTimeData);
 
-      if (list.size() < 286) {
+      final int dayCount = YearMonth.from(startTime.plus(1, ChronoUnit.HOURS).atZone(ZoneId.of("Europe/Vienna"))).lengthOfMonth();
+      LOG.trace("month has {} days", dayCount);
+      if (list.size() < dayCount) {
          result.setStatus(InverterStatus.OK_PARTIAL);
       } else {
          result.setStatus(InverterStatus.OK);

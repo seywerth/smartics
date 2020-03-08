@@ -55,14 +55,14 @@ public class MeteringDataController {
    }
 
    /**
-    * get summary for current or a specific day
+    * get summary for current or a specific day, month or year
     * 
     * @param day
     * @return
     */
-   @GetMapping("api/meterdatasummary/{day}")
-   public MeteringDataSummaryDto calculateSummary(@PathVariable String day) {
-      return inverterService.calculateSummary(day);
+   @GetMapping("api/meterdatasummary/{date}")
+   public MeteringDataSummaryDto calculateSummary(@PathVariable String date) {
+      return inverterService.calculateSummary(date);
    }
 
    /**

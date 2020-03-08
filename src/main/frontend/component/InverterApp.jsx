@@ -29,7 +29,8 @@ class InverterApp extends Component {
          width: window.innerWidth,
          height: window.innerHeight,
          widthChartCurrent: this.getCurrentChartWidth(window.innerWidth),
-         widthChartInverter: this.getInverterChartWidth(window.innerWidth)
+         widthChartInverter: this.getInverterChartWidth(window.innerWidth),
+         heightChartInverter: this.getInverterChartHeight(window.innerWidth)
       };
    }
 
@@ -51,6 +52,7 @@ class InverterApp extends Component {
          width: window.innerWidth,
          height: window.innerHeight,
          widthChartInverter: this.getInverterChartWidth(window.innerWidth),
+         heightChartInverter: this.getInverterChartHeight(window.innerWidth),
          widthChartCurrent: this.getCurrentChartWidth(window.innerWidth)
       });
    }
@@ -132,7 +134,7 @@ class InverterApp extends Component {
                   <div>status: {this.state.inverter.status}</div>
 
                   <br />
-                  <DropdownButton variant='outline-secondary' size='sm' title={this.state.updatechart} onSelect={this.handleUpdateChart}>
+                  <DropdownButton alignRight variant='outline-secondary' size='sm' title={this.state.updatechart} onSelect={this.handleUpdateChart}>
                      <Dropdown.Item eventKey="5">refresh: 5s</Dropdown.Item>
                      <Dropdown.Item eventKey="10">refresh: 10s</Dropdown.Item>
                      <Dropdown.Item eventKey="15">refresh: 15s</Dropdown.Item>
@@ -146,7 +148,7 @@ class InverterApp extends Component {
             </Row>
 
             <Row>
-               <EnergyDay data={this.state.dataChartInverter} size={[this.state.widthChartInverter, 300]}
+               <EnergyDay data={this.state.dataChartInverter} size={[this.state.widthChartInverter, this.state.heightChartInverter]}
                   showline={this.getCurrentDate(new Date()) == this.getCurrentDate(this.state.selectDate)}
                   maxwh={5500} />
             </Row>
@@ -185,6 +187,15 @@ class InverterApp extends Component {
          return 800;
       }
       return 600;
+   }
+
+   getInverterChartHeight(width) {
+      if (width === undefined || width < 640) {
+         return 200;
+      } else if (width > 1200) {
+         return 300;
+      }
+      return 200;
    }
 
    getCurrentForChart(data) {
